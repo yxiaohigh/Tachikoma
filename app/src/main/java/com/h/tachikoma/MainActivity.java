@@ -9,11 +9,11 @@ import android.util.Log;
 import com.h.tachikoma.entity.Student;
 import com.h.tachikoma.net.ApiService;
 
-import org.json.JSONObject;
-
 import java.io.IOException;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
@@ -35,14 +35,27 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         ApiService apiService = retrofit.create(ApiService.class);
-        Call<JSONObject> android = apiService.StringRepos("Android", 10, 1);
-        try {
-            Response<JSONObject> execute = android.execute();
-            String message = execute.message();
-            Log.i(TAG, message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Call<ResponseBody> android = apiService.getRepos("Android", 10, 1);
+        android.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                ResponseBody body = response.body();
+                try {
+                    String string = body.string();
+                    Log.i(TAG, "sssssssssssssssssonResponse: "+string);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                String s = response.toString();
+                Log.i(TAG, "sssssssssssssssssonResponse: "+body);
+                Log.i(TAG, "sssssssssssssssssonResponse: "+s);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
 
     }
 

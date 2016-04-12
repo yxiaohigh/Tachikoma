@@ -1,11 +1,6 @@
 package com.h.tachikoma.net;
 
-import com.h.tachikoma.entity.AndroidData;
-
-import org.json.JSONObject;
-
-import java.util.List;
-
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
@@ -20,7 +15,5 @@ import retrofit2.http.Path;
 public interface ApiService {
     String PATH="http://gank.io/api/data/";
     @GET("{type}/{amount}/{page}")
-    List<AndroidData> listRepos(@Path("type") String user,@Path("amount") int amount,@Path("page") int page);
-    @GET("{type}/{amount}/{page}")
-    Call<JSONObject> StringRepos(@Path("type") String user, @Path("amount") int amount, @Path("page") int page);
+    Call<ResponseBody> getRepos(@Path("type") String user, @Path("amount") int amount, @Path("page") int page);
 }
