@@ -1,5 +1,7 @@
 package com.h.tachikoma.net;
 
+import org.json.JSONArray;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -16,4 +18,7 @@ public interface ApiService {
     String PATH="http://gank.io/api/data/";
     @GET("{type}/{amount}/{page}")
     Call<ResponseBody> getRepos(@Path("type") String user, @Path("amount") int amount, @Path("page") int page);
+    @GET("{type}/{amount}/{page}")
+    Call<JSONArray> getJson(@Path("type") String user, @Path("amount") int amount, @Path("page") int page);
+
 }

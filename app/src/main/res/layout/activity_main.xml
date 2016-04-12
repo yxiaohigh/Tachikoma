@@ -4,7 +4,6 @@
     tools:context="com.h.tachikoma.MainActivity">
 
     <data>
-
         <import type="com.h.tachikoma.entity.Student" />
         <variable
             name="stu"

@@ -9,13 +9,14 @@ import android.util.Log;
 import com.h.tachikoma.entity.Student;
 import com.h.tachikoma.net.ApiService;
 
-import java.io.IOException;
+import org.json.JSONArray;
+import org.json.JSONException;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,30 +33,31 @@ public class MainActivity extends AppCompatActivity {
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(ApiService.PATH)
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         ApiService apiService = retrofit.create(ApiService.class);
-        Call<ResponseBody> android = apiService.getRepos("Android", 10, 1);
-        android.enqueue(new Callback<ResponseBody>() {
+        Call<JSONArray> android1 = apiService.getJson("Android", 10, 1);
+        android1.enqueue(new Callback<JSONArray>() {
+
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                ResponseBody body = response.body();
+            public void onResponse(Call<JSONArray> call, Response<JSONArray> response) {
+
                 try {
-                    String string = body.string();
-                    Log.i(TAG, "sssssssssssssssssonResponse: "+string);
-                } catch (IOException e) {
+                    Object o = response.body().get(1);
+                    Log.i(TAG, "onResponse: "+o.toString());
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                String s = response.toString();
-                Log.i(TAG, "sssssssssssssssssonResponse: "+body);
-                Log.i(TAG, "sssssssssssssssssonResponse: "+s);
+
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<JSONArray> call, Throwable t) {
 
             }
         });
+
 
     }
 
