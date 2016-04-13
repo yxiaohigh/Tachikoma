@@ -6,11 +6,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.h.tachikoma.entity.AndroidData;
+import com.h.tachikoma.entity.BasicData;
 import com.h.tachikoma.entity.Student;
 import com.h.tachikoma.net.ApiService;
 
-import org.json.JSONArray;
-import org.json.JSONException;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,23 +38,21 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         ApiService apiService = retrofit.create(ApiService.class);
-        Call<JSONArray> android1 = apiService.getJson("Android", 10, 1);
-        android1.enqueue(new Callback<JSONArray>() {
-
+        Call<BasicData<AndroidData>> android1 = apiService.getAndroid(10, 1);
+        android1.enqueue(new Callback<BasicData<AndroidData>>() {
             @Override
-            public void onResponse(Call<JSONArray> call, Response<JSONArray> response) {
-
-                try {
-                    Object o = response.body().get(1);
-                    Log.i(TAG, "onResponse: "+o.toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
+            public void onResponse(Call<BasicData<AndroidData>> call, Response<BasicData<AndroidData>> response) {
+                BasicData body = response.body();
+                body.isError();
+                List<AndroidData> results = body.getResults();
+                for (AndroidData result : results) {
+                    String s = result.toString();
+                    Log.i(TAG, "onResponse: >>>>>>>>>>>>>>>>>>>>>>>>>>>>" + s);
                 }
-
             }
 
             @Override
-            public void onFailure(Call<JSONArray> call, Throwable t) {
+            public void onFailure(Call<BasicData<AndroidData>> call, Throwable t) {
 
             }
         });
