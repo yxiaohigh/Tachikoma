@@ -2,7 +2,7 @@ package com.h.tachikoma.net;
 
 import com.h.tachikoma.entity.AndroidData;
 import com.h.tachikoma.entity.BasicData;
-import com.h.tachikoma.entity.Fuli;
+import com.h.tachikoma.entity.FuliData;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -25,7 +25,7 @@ public interface ApiService {
     @GET("Android/{amount}/{page}")
     Call<BasicData<AndroidData>> getAndroid( @Path("amount") int amount, @Path("page") int page);
 
-    @GET("Fuli/{amount}/{page}")
-    Call<BasicData<Fuli>> getFuli(@Path("amount") int amount, @Path("page") int page);
+    @GET("福利/{amount}/{page}")
+    Call<BasicData<FuliData>> getFuli(@Path("amount") int amount, @Path("page") int page);
 
 }
