@@ -1,18 +1,18 @@
 package com.h.tachikoma;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.h.tachikoma.entity.AndroidData;
 import com.h.tachikoma.entity.BasicData;
@@ -33,9 +33,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    private ImageView image_main;
-    private Button bt;
-    private String url;
     private RecyclerView rv;
 
     @Override
@@ -47,30 +44,25 @@ public class MainActivity extends AppCompatActivity {
         ViewDataBinding viewDataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         viewDataBinding.setVariable(com.h.tachikoma.BR.stu, student);*/
         setContentView(R.layout.activity_main1);
-        image_main = (ImageView) findViewById(R.id.image_main);
+
+        initNet();
+
         rv = (RecyclerView) findViewById(R.id.rv);
-        bt = (Button) findViewById(R.id.bt);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        rv.setLayoutManager(linearLayoutManager);
 
-
-        rv.setAdapter(new ImageRecAdpter());
-
-        bt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                initNet();
-            }
-        });
 
     }
 
-    private void getpic() {
-        Glide.with(MainActivity.this)
+    private void getpic(String url,ImageView view) {
+        Glide.with(getApplicationContext())
                 .load(url)
                 .asBitmap()
-                .placeholder(R.mipmap.ic_launcher)
-                //.centerCrop()
-                //.error(R.drawable.error)
-                //.override(100, 100)
+                .placeholder(R.drawable.error)
+                .centerCrop()
+                .error(R.mipmap.ic_launcher)
+                //.override(200, 200)
                 .listener(new RequestListener<String, Bitmap>() {
                     @Override
                     public boolean onException(Exception e, String model, Target<Bitmap> target, boolean isFirstResource) {
@@ -83,20 +75,12 @@ public class MainActivity extends AppCompatActivity {
                         return false;
                     }
                 })
-                .into(new BitmapImageViewTarget(image_main) {
-                    @Override
-                    protected void setResource(Bitmap resource) {
-                        super.setResource(resource);
-                    /*    RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(MainActivity.this.getResources(), resource);
-                        roundedBitmapDrawable.setCircular(true);
-                        image_main.setImageDrawable(roundedBitmapDrawable);*/
-                    }
-                });
+                .into(view);
     }
 
     private void initNet() {
         HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .addInterceptor(httpLoggingInterceptor)
                 .retryOnConnectionFailure(true)
@@ -113,29 +97,12 @@ public class MainActivity extends AppCompatActivity {
         ApiService apiService = retrofit.create(ApiService.class);
         Call<BasicData<AndroidData>> android = apiService.getAndroid(10, 1);
         final Call<BasicData<FuliData>> fuli = apiService.getFuli(10, 1);
-        android.enqueue(new Callback<BasicData<AndroidData>>() {
-            @Override
-            public void onResponse(Call<BasicData<AndroidData>> call, Response<BasicData<AndroidData>> response) {
-                BasicData body = response.body();
-                body.isError();
-                List<AndroidData> results = body.getResults();
-                for (AndroidData result : results) {
-                    String s = result.toString();
-                }
-            }
 
-            @Override
-            public void onFailure(Call<BasicData<AndroidData>> call, Throwable t) {
-
-            }
-        });
         fuli.enqueue(new Callback<BasicData<FuliData>>() {
             @Override
             public void onResponse(Call<BasicData<FuliData>> call, Response<BasicData<FuliData>> response) {
                 List<FuliData> results = response.body().getResults();
-                FuliData fuliData1 = results.get(2);
-                url = fuliData1.getUrl();
-                getpic();
+                rv.setAdapter(new ImageRecAdpter(MainActivity.this,results));
             }
 
             @Override
@@ -146,20 +113,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class ImageRecAdpter extends RecyclerView.Adapter {
+
+        private final Context context;
+        private final List<FuliData> data;
+
+        public ImageRecAdpter(Context context, List<FuliData> data) {
+            this.context = context;
+            this.data = data;
+        }
+
+
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return null;
+
+            ViewHolder holder = new ViewHolder(View.inflate(MainActivity.this, R.layout.item_imagelist, null));
+            return holder;
         }
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
+            ViewHolder holder1 = (ViewHolder) holder;
+            ImageView imageView = holder1.imageView;
+            FuliData t = data.get(position);
+            String url = t.getUrl();
+            getpic(url,imageView);
+
         }
 
         @Override
         public int getItemCount() {
+            if (data != null) {
+                return data.size();
+            }
             return 0;
         }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            ImageView imageView;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                imageView = (ImageView) itemView.findViewById(R.id.image);
+
+            }
+        }
+
     }
 
 }
