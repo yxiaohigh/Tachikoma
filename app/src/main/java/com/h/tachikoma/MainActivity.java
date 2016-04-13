@@ -55,11 +55,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void getpic(String url,ImageView view) {
+    private void getpic(String url, ImageView view) {
+
         Glide.with(getApplicationContext())
                 .load(url)
                 .asBitmap()
-                .placeholder(R.drawable.error)
+                .placeholder(R.mipmap.ic_launcher)
+                .dontAnimate()
                 .centerCrop()
                 .error(R.mipmap.ic_launcher)
                 //.override(200, 200)
@@ -96,13 +98,15 @@ public class MainActivity extends AppCompatActivity {
 
         ApiService apiService = retrofit.create(ApiService.class);
         Call<BasicData<AndroidData>> android = apiService.getAndroid(10, 1);
-        final Call<BasicData<FuliData>> fuli = apiService.getFuli(10, 1);
+        final Call<BasicData<FuliData>> fuli = apiService.getFuli(100, 1);
 
         fuli.enqueue(new Callback<BasicData<FuliData>>() {
             @Override
             public void onResponse(Call<BasicData<FuliData>> call, Response<BasicData<FuliData>> response) {
                 List<FuliData> results = response.body().getResults();
-                rv.setAdapter(new ImageRecAdpter(MainActivity.this,results));
+                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, results);
+                imageRecAdpter.setHasStableIds(true);
+                rv.setAdapter(imageRecAdpter);
             }
 
             @Override
@@ -137,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
             ImageView imageView = holder1.imageView;
             FuliData t = data.get(position);
             String url = t.getUrl();
-            getpic(url,imageView);
+            getpic(url, imageView);
 
         }
 
@@ -147,6 +151,11 @@ public class MainActivity extends AppCompatActivity {
                 return data.size();
             }
             return 0;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
