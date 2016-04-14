@@ -8,6 +8,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
+import rx.Observable;
 
 /**
  * Created by tony on 2016/4/12.
@@ -27,5 +28,8 @@ public interface ApiService {
 
     @GET("福利/{amount}/{page}")
     Call<BasicData<FuliData>> getFuli(@Path("amount") int amount, @Path("page") int page);
+
+    @GET("福利/{amount}/{page}")
+    Observable<BasicData<FuliData>> getFuliOb(@Path("amount") int amount, @Path("page") int page);
 
 }
