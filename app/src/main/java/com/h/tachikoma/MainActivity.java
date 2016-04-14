@@ -3,10 +3,10 @@ package com.h.tachikoma;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,12 +36,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView rv;
-    private Observer<BasicData<FuliData>> observer;
+    private Observer<List<FuliData>> observer;
+    private Toolbar toolbar;
 
 
     @Override
@@ -53,8 +55,10 @@ public class MainActivity extends AppCompatActivity {
         ViewDataBinding viewDataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         viewDataBinding.setVariable(com.h.tachikoma.BR.stu, student);*/
         setContentView(R.layout.activity_main1);
-        ActionBar supportActionBar = getSupportActionBar();
-        observer = new Observer<BasicData<FuliData>>() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("ttt");
+        toolbar.inflateMenu(R.menu.main_activity_actions);
+        observer = new Observer<List<FuliData>>() {
 
             @Override
             public void onCompleted() {
@@ -67,12 +71,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onNext(BasicData<FuliData> fuliDataBasicData) {
-                List<FuliData> results = fuliDataBasicData.getResults();
-                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, results);
+            public void onNext(List<FuliData> fuliDatas) {
+                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
                 imageRecAdpter.setHasStableIds(true);
                 rv.setAdapter(imageRecAdpter);
             }
+
         };
         initNet();
 
@@ -144,6 +148,12 @@ public class MainActivity extends AppCompatActivity {
         fuliOb
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .map(new Func1<BasicData<FuliData>, List<FuliData>>() {
+                    @Override
+                    public List<FuliData> call(BasicData<FuliData> fuliDataBasicData) {
+                        return fuliDataBasicData.getResults();
+                    }
+                })
                 .subscribe(observer);
 
         fuli.enqueue(new Callback<BasicData<FuliData>>() {
