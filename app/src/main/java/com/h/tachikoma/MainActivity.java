@@ -15,9 +15,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.ListPreloader;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.h.tachikoma.entity.AndroidData;
 import com.h.tachikoma.entity.BasicData;
 import com.h.tachikoma.entity.FuliData;
 import com.h.tachikoma.net.ApiService;
@@ -27,9 +27,6 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -41,51 +38,35 @@ import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView rv;
-    private Observer<List<FuliData>> observer;
-    private Toolbar toolbar;
 
+    private RecyclerView rv;
+    private ListPreloader listPreloader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    /*    Student student = new Student();
-        student.setName("name");
-        student.setAddr("addr");
-        ViewDataBinding viewDataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        viewDataBinding.setVariable(com.h.tachikoma.BR.stu, student);*/
         setContentView(R.layout.activity_main1);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("ttt");
-        toolbar.inflateMenu(R.menu.main_activity_actions);
-        observer = new Observer<List<FuliData>>() {
 
-            @Override
-            public void onCompleted() {
+        initView();
 
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(List<FuliData> fuliDatas) {
-                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
-                imageRecAdpter.setHasStableIds(true);
-                rv.setAdapter(imageRecAdpter);
-            }
-
-        };
         initNet();
 
+    }
+
+    private void initView() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         rv = (RecyclerView) findViewById(R.id.rv);
+
+        toolbar.inflateMenu(R.menu.main_activity_actions);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         rv.setLayoutManager(linearLayoutManager);
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
+        rv.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+        });
     }
 
     @Override
@@ -93,35 +74,33 @@ public class MainActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * 加载图片
+     *
+     * @param url
+     * @param view
+     * @param position
+     */
     private void getpic(String url, ImageView view, final int position) {
 
         Glide.with(this)
                 .load(url)
                 .asBitmap()
+                .fitCenter()
+                .override(300, 300)
+                .listener(new StringBitmapRequestListener(position))
                 //.fallback(R.drawable.bg_image)
                 //.placeholder(R.drawable.bg_image)
                 //.dontAnimate()
                 //.centerCrop()
                 //.diskCacheStrategy(DiskCacheStrategy.ALL)
-                .fitCenter()
                 //.error(R.drawable.bg_image)
-                .override(100, 100)
-                .listener(new RequestListener<String, Bitmap>() {
-                    @Override
-                    public boolean onException(Exception e, String model, Target<Bitmap> target, boolean isFirstResource) {
-                        Toast.makeText(MainActivity.this, "Exception>>" + position, Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(Bitmap resource, String model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                        return false;
-                    }
-                })
                 .into(view);
+
     }
 
     private void initNet() {
+
         HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
@@ -140,39 +119,29 @@ public class MainActivity extends AppCompatActivity {
 
 
         ApiService apiService = retrofit.create(ApiService.class);
-        Call<BasicData<AndroidData>> android = apiService.getAndroid(10, 1);
-        final Call<BasicData<FuliData>> fuli = apiService.getFuli(100, 1);
-
         Observable<BasicData<FuliData>> fuliOb = apiService.getFuliOb(100, 1);
 
-        fuliOb
-                .subscribeOn(Schedulers.io())
+        fuliOb.subscribeOn(Schedulers.io())
+                .map(new BasicDataListFunc1())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map(new Func1<BasicData<FuliData>, List<FuliData>>() {
-                    @Override
-                    public List<FuliData> call(BasicData<FuliData> fuliDataBasicData) {
-                        return fuliDataBasicData.getResults();
-                    }
-                })
-                .subscribe(observer);
+                .subscribe(new ListObserver());
 
-        fuli.enqueue(new Callback<BasicData<FuliData>>() {
-            @Override
-            public void onResponse(Call<BasicData<FuliData>> call, Response<BasicData<FuliData>> response) {
-              /*  List<FuliData> results = response.body().getResults();
-                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, results);
-                imageRecAdpter.setHasStableIds(true);
-                rv.setAdapter(imageRecAdpter);*/
-            }
 
-            @Override
-            public void onFailure(Call<BasicData<FuliData>> call, Throwable t) {
-
-            }
-        });
     }
 
+    /**
+     * fuli接口的 Rxjava map数据转换
+     */
+    private static class BasicDataListFunc1 implements Func1<BasicData<FuliData>, List<FuliData>> {
+        @Override
+        public List<FuliData> call(BasicData<FuliData> fuliDataBasicData) {
+            return fuliDataBasicData.getResults();
+        }
+    }
 
+    /**
+     * recAdpter
+     */
     class ImageRecAdpter extends RecyclerView.Adapter {
 
         private final Context context;
@@ -231,4 +200,49 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * 网络请求数据的回调
+     */
+    private class ListObserver implements Observer<List<FuliData>> {
+
+        @Override
+        public void onCompleted() {
+
+        }
+
+        @Override
+        public void onError(Throwable e) {
+
+        }
+
+        @Override
+        public void onNext(List<FuliData> fuliDatas) {
+            ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
+            imageRecAdpter.setHasStableIds(true);
+            rv.setAdapter(imageRecAdpter);
+        }
+
+    }
+
+    /**
+     * 图片下载的回调
+     */
+    private class StringBitmapRequestListener implements RequestListener<String, Bitmap> {
+        private final int position;
+
+        public StringBitmapRequestListener(int position) {
+            this.position = position;
+        }
+
+        @Override
+        public boolean onException(Exception e, String model, Target<Bitmap> target, boolean isFirstResource) {
+            Toast.makeText(MainActivity.this, "Exception>>" + position, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        @Override
+        public boolean onResourceReady(Bitmap resource, String model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
+            return false;
+        }
+    }
 }
