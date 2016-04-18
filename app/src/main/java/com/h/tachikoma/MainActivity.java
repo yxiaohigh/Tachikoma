@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.BitmapTypeRequest;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.ListPreloader;
 import com.bumptech.glide.request.RequestListener;
@@ -63,23 +64,48 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         rv = (RecyclerView) findViewById(R.id.rv);
         vp = (ViewPager) findViewById(R.id.vp);
-        LayoutInflater inflater = LayoutInflater.from(this);
-        View item1 = inflater.inflate(R.layout.item_imagelist, null);
-        View item2 = inflater.inflate(R.layout.item_imagelist, null);
-        View item3 = inflater.inflate(R.layout.item_imagelist, null);
-
-        vlist.add(item1);
-        vlist.add(item2);
-        vlist.add(item3);
 
         toolbar.inflateMenu(R.menu.main_activity_actions);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         rv.setLayoutManager(linearLayoutManager);
-        rv.setOnScrollListener(new RecyclerView.OnScrollListener() {
+
+
+        //小图监听
+        rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
+                int top = recyclerView.getTop();
+             /*   View childAt = recyclerView.getChildAt(0);
+                    int position = (int) childAt.getTag();*/
+                    vp.setCurrentItem(top);
+
+
+            }
+        });
+
+        //大图滑动监听
+        vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            public int state;
+
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (rv.getScrollState() == 0) {//小图自身在滚动就不滚动了
+                    rv.smoothScrollToPosition(position);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+                this.state=state;
             }
         });
 
@@ -97,43 +123,28 @@ public class MainActivity extends AppCompatActivity {
      * @param url
      * @param view
      * @param position
+     * @param b        设置 true 为加载小图
      */
-    private void getPic(String url, ImageView view, final int position) {
+    private void getPic(String url, ImageView view, final int position, boolean b) {
 
-        Glide.with(this)
+        BitmapTypeRequest<String> stringBitmapTypeRequest = Glide.with(this)
                 .load(url)
-                .asBitmap()
+                .asBitmap();
+        if (b) {
+            stringBitmapTypeRequest.override(100, 100);
+        }
+        stringBitmapTypeRequest
                 .centerCrop()
                 .listener(new StringBitmapRequestListener(position))
-                .override(100, 100)
                 //.fallback(R.drawable.bg_image)
                 //.placeholder(R.drawable.bg_image)
                 //.dontAnimate()
-                //.centerCrop()
                 //.diskCacheStrategy(DiskCacheStrategy.ALL)
                 //.error(R.drawable.bg_image)
                 .into(view);
 
     }
 
-
-    private void getBigPic(String url, ImageView view, final int position) {
-
-        Glide.with(this)
-                .load(url)
-                .asBitmap()
-                .centerCrop()
-                .listener(new StringBitmapRequestListener(position))
-                // .override(100, 100)
-                //.fallback(R.drawable.bg_image)
-                //.placeholder(R.drawable.bg_image)
-                //.dontAnimate()
-                //.centerCrop()
-                //.diskCacheStrategy(DiskCacheStrategy.ALL)
-                //.error(R.drawable.bg_image)
-                .into(view);
-
-    }
 
     private void initNet() {
 
@@ -208,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
 
             FuliData t = data.get(position);
             String url = t.getUrl();
-            getPic(url, imageView, position);
+            getPic(url, imageView, position, true);
             image_text.setText(position + 1 + "");
 
         }
@@ -242,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             if (mOnItemClickListener != null) {
-                mOnItemClickListener.onItemClick(v,  (int)v.getTag());
+                mOnItemClickListener.onItemClick(v, (int) v.getTag());
             }
         }
 
@@ -280,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
             imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
                 @Override
                 public void onItemClick(View view, int position) {
-                    Toast.makeText(getApplication(), position+"", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplication(), position + "", Toast.LENGTH_SHORT).show();
                     vp.setCurrentItem(position);
                 }
             });
@@ -333,8 +344,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-          /*  View view = vlist.get(position % 3);
-            ImageView image = (ImageView) view.findViewById(R.id.image);*/
 
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
             View view = inflater.inflate(R.layout.item_imagelist, null);
@@ -342,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
 
             FuliData t = fuliDatas.get(position);
             String url = t.getUrl();
-            getBigPic(url, image, position);
+            getPic(url, image, position, false);
 
             TextView image_text = (TextView) view.findViewById(R.id.image_text);
             image_text.setText(position + 1 + "");
@@ -352,7 +361,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            //View view = vlist.get(position % 3);
             container.removeView((View) object);
         }
     }
