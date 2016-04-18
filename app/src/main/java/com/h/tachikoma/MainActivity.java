@@ -44,6 +44,7 @@ import rx.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity {
 
 
+    private  int state1;
     private RecyclerView rv;
     private ListPreloader listPreloader;
     private ViewPager vp;
@@ -77,18 +78,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                int top = recyclerView.getTop();
-             /*   View childAt = recyclerView.getChildAt(0);
-                    int position = (int) childAt.getTag();*/
-                    vp.setCurrentItem(top);
-
+//                int top = recyclerView.getTop();
+                if (state1 == 0) {
+                    View childAt = recyclerView.getChildAt(0);
+                    int position = (int) childAt.getTag();
+                    vp.setCurrentItem(position);
+                }
 
             }
         });
 
         //大图滑动监听
         vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            public int state;
 
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -97,15 +98,16 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                if (rv.getScrollState() == 0) {//小图自身在滚动就不滚动了
-                    rv.smoothScrollToPosition(position);
+                int childCount = rv.getChildCount();
+                if (rv.getScrollState() == 0) {//小图自身在滚动时不改变其位置
+                    rv.smoothScrollToPosition(position+childCount-1);
                 }
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
 
-                this.state=state;
+                state1=state;
             }
         });
 
