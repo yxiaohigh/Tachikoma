@@ -67,14 +67,10 @@ public class MainActivity extends AppCompatActivity {
         View item1 = inflater.inflate(R.layout.item_imagelist, null);
         View item2 = inflater.inflate(R.layout.item_imagelist, null);
         View item3 = inflater.inflate(R.layout.item_imagelist, null);
-        View item4 = inflater.inflate(R.layout.item_imagelist, null);
-        View item5 = inflater.inflate(R.layout.item_imagelist, null);
 
         vlist.add(item1);
         vlist.add(item2);
         vlist.add(item3);
-        vlist.add(item4);
-        vlist.add(item5);
 
         toolbar.inflateMenu(R.menu.main_activity_actions);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -86,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
                 super.onScrollStateChanged(recyclerView, newState);
             }
         });
+
+
     }
 
     @Override
@@ -126,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 .asBitmap()
                 .centerCrop()
                 .listener(new StringBitmapRequestListener(position))
-               // .override(100, 100)
+                // .override(100, 100)
                 //.fallback(R.drawable.bg_image)
                 //.placeholder(R.drawable.bg_image)
                 //.dontAnimate()
@@ -180,10 +178,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * recAdpter
      */
-    class ImageRecAdpter extends RecyclerView.Adapter {
+    class ImageRecAdpter extends RecyclerView.Adapter implements View.OnClickListener {
 
         private final Context context;
         private final List<FuliData> data;
+        private OnRecyclerViewItemClickListener mOnItemClickListener = null;
 
         public ImageRecAdpter(Context context, List<FuliData> data) {
             this.context = context;
@@ -193,7 +192,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            ViewHolder holder = new ViewHolder(View.inflate(context, R.layout.item_imagelist, null));
+            View view = View.inflate(context, R.layout.item_imagelist, null);
+            ViewHolder holder = new ViewHolder(view);
+            view.setOnClickListener(this);
             return holder;
         }
 
@@ -201,13 +202,14 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
             ViewHolder holder1 = (ViewHolder) holder;
+            holder.itemView.setTag(position);
             ImageView imageView = holder1.imageView;
             TextView image_text = holder1.image_text;
 
             FuliData t = data.get(position);
             String url = t.getUrl();
             getPic(url, imageView, position);
-            image_text.setText(position + 1+"");
+            image_text.setText(position + 1 + "");
 
         }
 
@@ -224,6 +226,7 @@ public class MainActivity extends AppCompatActivity {
             return position;
         }
 
+
         class ViewHolder extends RecyclerView.ViewHolder {
             ImageView imageView;
             TextView image_text;
@@ -234,6 +237,21 @@ public class MainActivity extends AppCompatActivity {
                 image_text = (TextView) itemView.findViewById(R.id.image_text);
 
             }
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (mOnItemClickListener != null) {
+                mOnItemClickListener.onItemClick(v,  (int)v.getTag());
+            }
+        }
+
+        public abstract class OnRecyclerViewItemClickListener {
+            public abstract void onItemClick(View view, int position);
+        }
+
+        public void setOnItemClickListener(OnRecyclerViewItemClickListener listener) {
+            this.mOnItemClickListener = listener;
         }
 
     }
@@ -255,10 +273,18 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onNext(List<FuliData> fuliDatas) {
+            vp.setAdapter(new MyPagerAdapter(fuliDatas));
+
             ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
             imageRecAdpter.setHasStableIds(true);
+            imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    Toast.makeText(getApplication(), position+"", Toast.LENGTH_SHORT).show();
+                    vp.setCurrentItem(position);
+                }
+            });
             rv.setAdapter(imageRecAdpter);
-            vp.setAdapter(new MyPagerAdapter(fuliDatas));
         }
 
     }
@@ -285,6 +311,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * PagerAdapter
+     */
     private class MyPagerAdapter extends PagerAdapter {
         private List<FuliData> fuliDatas;
 
@@ -304,7 +333,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            View view = vlist.get(position % 5);
+          /*  View view = vlist.get(position % 3);
+            ImageView image = (ImageView) view.findViewById(R.id.image);*/
+
+            LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+            View view = inflater.inflate(R.layout.item_imagelist, null);
             ImageView image = (ImageView) view.findViewById(R.id.image);
 
             FuliData t = fuliDatas.get(position);
@@ -312,15 +345,15 @@ public class MainActivity extends AppCompatActivity {
             getBigPic(url, image, position);
 
             TextView image_text = (TextView) view.findViewById(R.id.image_text);
-            image_text.setText(position + "");
+            image_text.setText(position + 1 + "");
             container.addView(view);
             return view;
         }
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            View view = vlist.get(position % 5);
-            container.removeView(view);
+            //View view = vlist.get(position % 3);
+            container.removeView((View) object);
         }
     }
 }
