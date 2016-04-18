@@ -3,10 +3,13 @@ package com.h.tachikoma;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +25,7 @@ import com.h.tachikoma.entity.BasicData;
 import com.h.tachikoma.entity.FuliData;
 import com.h.tachikoma.net.ApiService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -41,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView rv;
     private ListPreloader listPreloader;
+    private ViewPager vp;
+    private List<View> vlist = new ArrayList<>();//viewpager的数据
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +62,19 @@ public class MainActivity extends AppCompatActivity {
     private void initView() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         rv = (RecyclerView) findViewById(R.id.rv);
+        vp = (ViewPager) findViewById(R.id.vp);
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View item1 = inflater.inflate(R.layout.item_imagelist, null);
+        View item2 = inflater.inflate(R.layout.item_imagelist, null);
+        View item3 = inflater.inflate(R.layout.item_imagelist, null);
+        View item4 = inflater.inflate(R.layout.item_imagelist, null);
+        View item5 = inflater.inflate(R.layout.item_imagelist, null);
+
+        vlist.add(item1);
+        vlist.add(item2);
+        vlist.add(item3);
+        vlist.add(item4);
+        vlist.add(item5);
 
         toolbar.inflateMenu(R.menu.main_activity_actions);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -81,14 +100,33 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      * @param position
      */
-    private void getpic(String url, ImageView view, final int position) {
+    private void getPic(String url, ImageView view, final int position) {
 
         Glide.with(this)
                 .load(url)
                 .asBitmap()
-                .fitCenter()
-                .override(300, 300)
+                .centerCrop()
                 .listener(new StringBitmapRequestListener(position))
+                .override(100, 100)
+                //.fallback(R.drawable.bg_image)
+                //.placeholder(R.drawable.bg_image)
+                //.dontAnimate()
+                //.centerCrop()
+                //.diskCacheStrategy(DiskCacheStrategy.ALL)
+                //.error(R.drawable.bg_image)
+                .into(view);
+
+    }
+
+
+    private void getBigPic(String url, ImageView view, final int position) {
+
+        Glide.with(this)
+                .load(url)
+                .asBitmap()
+                .centerCrop()
+                .listener(new StringBitmapRequestListener(position))
+               // .override(100, 100)
                 //.fallback(R.drawable.bg_image)
                 //.placeholder(R.drawable.bg_image)
                 //.dontAnimate()
@@ -168,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
 
             FuliData t = data.get(position);
             String url = t.getUrl();
-            getpic(url, imageView, position);
-            image_text.setText(position + 1 + "/" + data.size());
+            getPic(url, imageView, position);
+            image_text.setText(position + 1+"");
 
         }
 
@@ -220,6 +258,7 @@ public class MainActivity extends AppCompatActivity {
             ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
             imageRecAdpter.setHasStableIds(true);
             rv.setAdapter(imageRecAdpter);
+            vp.setAdapter(new MyPagerAdapter(fuliDatas));
         }
 
     }
@@ -243,6 +282,45 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onResourceReady(Bitmap resource, String model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
             return false;
+        }
+    }
+
+    private class MyPagerAdapter extends PagerAdapter {
+        private List<FuliData> fuliDatas;
+
+        public MyPagerAdapter(List<FuliData> fuliDatas) {
+            this.fuliDatas = fuliDatas;
+        }
+
+        @Override
+        public int getCount() {
+            return fuliDatas.size();
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            View view = vlist.get(position % 5);
+            ImageView image = (ImageView) view.findViewById(R.id.image);
+
+            FuliData t = fuliDatas.get(position);
+            String url = t.getUrl();
+            getBigPic(url, image, position);
+
+            TextView image_text = (TextView) view.findViewById(R.id.image_text);
+            image_text.setText(position + "");
+            container.addView(view);
+            return view;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            View view = vlist.get(position % 5);
+            container.removeView(view);
         }
     }
 }

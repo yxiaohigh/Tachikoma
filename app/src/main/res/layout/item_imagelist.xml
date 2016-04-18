@@ -11,9 +11,10 @@
             android:layout_height="wrap_content" />
         <TextView
             android:layout_gravity="bottom|right"
-            android:layout_margin="10dp"
+            android:layout_margin="4dp"
             android:id="@+id/image_text"
             android:text="tttttt"
+            android:textSize="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </FrameLayout>
