@@ -17,44 +17,50 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.BitmapTypeRequest;
+import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.ListPreloader;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.h.tachikoma.entity.BasicData;
 import com.h.tachikoma.entity.FuliData;
 import com.h.tachikoma.net.ApiService;
+import com.h.tachikoma.net.NetClient;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+import rx.subjects.BehaviorSubject;
 
 public class MainActivity extends AppCompatActivity {
 
 
-    private  int state1;
+    private static final String DATA_FILE_NAME = "data_file_name";
+    private int state1;
     private RecyclerView rv;
-    private ListPreloader listPreloader;
     private ViewPager vp;
-    private List<View> vlist = new ArrayList<>();//viewpager的数据
+    File dataFile;
+    private BehaviorSubject<Object> cache;
+    Gson gson = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main1);
-
+        dataFile = new File(getApplication().getFilesDir(), DATA_FILE_NAME);
         initView();
 
         initNet();
@@ -100,14 +106,14 @@ public class MainActivity extends AppCompatActivity {
             public void onPageSelected(int position) {
                 int childCount = rv.getChildCount();
                 if (rv.getScrollState() == 0) {//小图自身在滚动时不改变其位置
-                    rv.smoothScrollToPosition(position+childCount-1);
+                    rv.smoothScrollToPosition(position + childCount - 1);
                 }
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
 
-                state1=state;
+                state1 = state;
             }
         });
 
@@ -129,20 +135,25 @@ public class MainActivity extends AppCompatActivity {
      */
     private void getPic(String url, ImageView view, final int position, boolean b) {
 
-        BitmapTypeRequest<String> stringBitmapTypeRequest = Glide.with(this)
+        DrawableRequestBuilder<String> stringDrawableTypeRequest = Glide
+                .with(this)
                 .load(url)
-                .asBitmap();
+                .crossFade();
+        //.asBitmap();
+
         if (b) {
-            stringBitmapTypeRequest.override(100, 100);
+            stringDrawableTypeRequest.override(100, 100);
+        } else {
+            stringDrawableTypeRequest.placeholder(R.drawable.bg_image);
         }
-        stringBitmapTypeRequest
+        stringDrawableTypeRequest
                 .centerCrop()
-                .listener(new StringBitmapRequestListener(position))
+                // .listener(new StringBitmapRequestListener(position))
                 //.fallback(R.drawable.bg_image)
-                //.placeholder(R.drawable.bg_image)
                 //.dontAnimate()
                 //.diskCacheStrategy(DiskCacheStrategy.ALL)
                 //.error(R.drawable.bg_image)
+
                 .into(view);
 
     }
@@ -150,32 +161,105 @@ public class MainActivity extends AppCompatActivity {
 
     private void initNet() {
 
-        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .addInterceptor(httpLoggingInterceptor)
-                .retryOnConnectionFailure(true)
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .build();
+        if (cache == null) {//没有缓存 保存缓存
+
+            List<FuliData> fuliDatas1 = readItems();//看硬盘中是否存在缓存
+            if (fuliDatas1 == null) {
+                writeItems(fuliDatas1);//写入硬盘
+            } else {
+                
+            }
+            cache = BehaviorSubject.create();
+            ApiService apiService = NetClient.getApiService();
+            Observable<BasicData<FuliData>> fuliOb = apiService.getFuliOb(100, 1);
+
+            fuliOb.subscribeOn(Schedulers.io())
+                    .map(new BasicDataListFunc1())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnNext(new Action1<List<FuliData>>() {
+                        @Override
+                        public void call(List<FuliData> fuliDatas) {
+                            List<FuliData> fuliDatas1 = readItems();//看硬盘中是否存在缓存
+                            if (fuliDatas1 == null) {
+                                writeItems(fuliDatas);//写入硬盘
+                            } else {
+                                //读出数据 存入缓存
+                            }
+                        }
+                    })
+                    .subscribe(cache);
+        }
+        //cache.observeOn(AndroidSchedulers.mainThread()).subscribe(new ListObserver());
+        cache.observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Object>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(Object o) {
+                List<FuliData> fuliDatas = (List<FuliData>) o;
+                vp.setAdapter(new MyPagerAdapter(fuliDatas));
+
+                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
+                imageRecAdpter.setHasStableIds(true);
+                imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        Toast.makeText(getApplication(), position + "", Toast.LENGTH_SHORT).show();
+                        vp.setCurrentItem(position);
+                    }
+                });
+                rv.setAdapter(imageRecAdpter);
+
+            }
+        });
+        //.subscribe(new ListObserver());
 
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(ApiService.PATH)
-                .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
+    }
+
+    public List<FuliData> readItems() {
+        // Hard code adding some delay, to distinguish reading from memory and reading disk clearly
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Reader reader = new FileReader(dataFile);
+            return gson.fromJson(reader, new TypeToken<List<FuliData>>() {
+            }.getType());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 
-        ApiService apiService = retrofit.create(ApiService.class);
-        Observable<BasicData<FuliData>> fuliOb = apiService.getFuliOb(100, 1);
+    public void writeItems(List<FuliData> datas) {
 
-        fuliOb.subscribeOn(Schedulers.io())
-                .map(new BasicDataListFunc1())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new ListObserver());
-
-
+        String json = gson.toJson(datas);
+        try {
+            if (!dataFile.exists()) {
+                try {
+                    dataFile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            Writer writer = new FileWriter(dataFile);
+            writer.write(json);
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -281,6 +365,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onError(Throwable e) {
+            Toast.makeText(MainActivity.this, e.getMessage() + " 使用缓存", Toast.LENGTH_SHORT).show();
 
         }
 
