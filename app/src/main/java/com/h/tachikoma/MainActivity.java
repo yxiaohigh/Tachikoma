@@ -34,6 +34,7 @@ import java.util.List;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     File dataFile;
     private BehaviorSubject<List<FuliData>> cache;
     Gson gson = new Gson();
+    private List<FuliData> fuliDatasBak;
+    private Subscription subscribe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,16 +170,10 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void call(List<FuliData> fuliDatas) {
 
-//                        FuliData fuliData = fuliDatas.get(0);
-//                        FuliData fuliData1 = fuliDatasBak.get(0);
-//                        if (fuliData.get_id()!=fuliData1.get_id()) {
-//                            String string = gson.toJson(fuliDatas);
-//                            DataUtil.writeData(dataFile, string);//写入硬盘
-//                            fuliDatasBak = fuliDatas;
-//                        }
-                        String string = gson.toJson(fuliDatas);
-                        DataUtil.writeData(dataFile, string);//写入硬盘
-
+                        if (isSaveCache(fuliDatas)) {//判断数据是否变化
+                            String string = gson.toJson(fuliDatas);
+                            DataUtil.writeData(dataFile, string);//写入硬盘
+                        }
                     }
                 })
                 .doOnTerminate(new Action0() {
@@ -187,13 +184,34 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(cache);//写入缓存
     }
 
+
+    /**
+     * 比较网络请求的数据是否有更新
+     *
+     * @param fuliDatas
+     * @return
+     */
+    public boolean isSaveCache(List<FuliData> fuliDatas) {
+        if (fuliDatasBak != null) {
+            FuliData fuliData = fuliDatas.get(0);
+            FuliData fuliData1 = fuliDatasBak.get(0);
+            fuliDatasBak = fuliDatas;
+            if (fuliData.get_id().equals(fuliData1.get_id())) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return true;
+    }
+
     /**
      * 进入页面从缓存加载数据
      */
     private void initPic() {
         if (cache == null) {
             cache = BehaviorSubject.create();
-            Observable.create(new Observable.OnSubscribe<List<FuliData>>() {
+            subscribe = Observable.create(new Observable.OnSubscribe<List<FuliData>>() {
 
                 @Override
                 public void call(Subscriber<? super List<FuliData>> subscriber) {
@@ -205,13 +223,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }).subscribe(cache);
-
         }
 
         cache.observeOn(AndroidSchedulers.mainThread()).subscribe(new DataObserver());
-
     }
-
 
 
     /**
@@ -387,6 +402,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onNext(List<FuliData> fuliDatas) {
+
+            if (isSaveCache(fuliDatas)) {
                 vp.setAdapter(new MyPagerAdapter(fuliDatas));
                 ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
                 imageRecAdpter.setHasStableIds(true);
@@ -398,6 +415,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 rv.setAdapter(imageRecAdpter);
+            }
 
         }
 
