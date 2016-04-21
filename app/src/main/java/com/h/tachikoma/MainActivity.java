@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rv;
     private ViewPager vp;
     File dataFile;
-    private BehaviorSubject<Object> cache;
+    private BehaviorSubject<List<FuliData>> cache;
     Gson gson = new Gson();
 
     @Override
@@ -161,65 +161,30 @@ public class MainActivity extends AppCompatActivity {
 
     private void initNet() {
 
-        if (cache == null) {//没有缓存 保存缓存
-
-            List<FuliData> fuliDatas1 = readItems();//看硬盘中是否存在缓存
-            if (fuliDatas1 == null) {
-                writeItems(fuliDatas1);//写入硬盘
-            } else {
-                
-            }
+        if (cache == null) {//内存没有缓存
             cache = BehaviorSubject.create();
-            ApiService apiService = NetClient.getApiService();
-            Observable<BasicData<FuliData>> fuliOb = apiService.getFuliOb(100, 1);
+            List<FuliData> fuliDatas1 = readItems();//看硬盘中是否存在缓存
+            if (fuliDatas1 == null) {  //没有硬盘缓存
+                //  写入缓存  写入硬盘
+                ApiService apiService = NetClient.getApiService();
+                Observable<BasicData<FuliData>> fuliOb = apiService.getFuliOb(100, 1);
 
-            fuliOb.subscribeOn(Schedulers.io())
-                    .map(new BasicDataListFunc1())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doOnNext(new Action1<List<FuliData>>() {
-                        @Override
-                        public void call(List<FuliData> fuliDatas) {
-                            List<FuliData> fuliDatas1 = readItems();//看硬盘中是否存在缓存
-                            if (fuliDatas1 == null) {
+                fuliOb.subscribeOn(Schedulers.io())
+                        .map(new BasicDataListFunc1())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnNext(new Action1<List<FuliData>>() {
+                            @Override
+                            public void call(List<FuliData> fuliDatas) {
                                 writeItems(fuliDatas);//写入硬盘
-                            } else {
-                                //读出数据 存入缓存
                             }
-                        }
-                    })
-                    .subscribe(cache);
+                        })
+                        .subscribe(cache);//写入缓存
+
+            } else { //读取硬盘放入缓存
+                cache.onNext(fuliDatas1);
+            }
         }
-        //cache.observeOn(AndroidSchedulers.mainThread()).subscribe(new ListObserver());
-        cache.observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Object>() {
-            @Override
-            public void onCompleted() {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(Object o) {
-                List<FuliData> fuliDatas = (List<FuliData>) o;
-                vp.setAdapter(new MyPagerAdapter(fuliDatas));
-
-                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
-                imageRecAdpter.setHasStableIds(true);
-                imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        Toast.makeText(getApplication(), position + "", Toast.LENGTH_SHORT).show();
-                        vp.setCurrentItem(position);
-                    }
-                });
-                rv.setAdapter(imageRecAdpter);
-
-            }
-        });
-        //.subscribe(new ListObserver());
+        cache.observeOn(AndroidSchedulers.mainThread()).subscribe(new DateObserver());
 
 
     }
@@ -353,39 +318,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * 网络请求数据的回调
-     */
-    private class ListObserver implements Observer<List<FuliData>> {
 
-        @Override
-        public void onCompleted() {
-
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            Toast.makeText(MainActivity.this, e.getMessage() + " 使用缓存", Toast.LENGTH_SHORT).show();
-
-        }
-
-        @Override
-        public void onNext(List<FuliData> fuliDatas) {
-            vp.setAdapter(new MyPagerAdapter(fuliDatas));
-
-            ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
-            imageRecAdpter.setHasStableIds(true);
-            imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-                    Toast.makeText(getApplication(), position + "", Toast.LENGTH_SHORT).show();
-                    vp.setCurrentItem(position);
-                }
-            });
-            rv.setAdapter(imageRecAdpter);
-        }
-
-    }
 
     /**
      * 图片下载的回调
@@ -450,5 +383,37 @@ public class MainActivity extends AppCompatActivity {
         public void destroyItem(ViewGroup container, int position, Object object) {
             container.removeView((View) object);
         }
+    }
+
+    /**
+     * 网络请求的数据回调
+     */
+    private class DateObserver implements Observer<List<FuliData>> {
+        @Override
+        public void onCompleted() {
+
+        }
+
+        @Override
+        public void onError(Throwable e) {
+
+        }
+
+        @Override
+        public void onNext(List<FuliData> fuliDatas) {
+            vp.setAdapter(new MyPagerAdapter(fuliDatas));
+
+            ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
+            imageRecAdpter.setHasStableIds(true);
+            imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    Toast.makeText(getApplication(), position + "", Toast.LENGTH_SHORT).show();
+                    vp.setCurrentItem(position);
+                }
+            });
+            rv.setAdapter(imageRecAdpter);
+        }
+
     }
 }
