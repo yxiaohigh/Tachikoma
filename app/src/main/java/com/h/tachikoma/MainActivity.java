@@ -22,24 +22,20 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.h.tachikoma.entity.BasicData;
 import com.h.tachikoma.entity.FuliData;
 import com.h.tachikoma.net.ApiService;
 import com.h.tachikoma.net.NetClient;
+import com.h.tachikoma.utli.DataUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.List;
 
 import rx.Observable;
 import rx.Observer;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -49,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private static final String DATA_FILE_NAME = "data_file_name";
+    private static final String TAG = "MainActivity";
     private int state1;
     private RecyclerView rv;
     private ViewPager vp;
@@ -62,9 +59,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main1);
         dataFile = new File(getApplication().getFilesDir(), DATA_FILE_NAME);
         initView();
-
-        initNet();
-
+        initPic();
+        getNetDate();
     }
 
     private void initView() {
@@ -153,79 +149,70 @@ public class MainActivity extends AppCompatActivity {
                 //.dontAnimate()
                 //.diskCacheStrategy(DiskCacheStrategy.ALL)
                 //.error(R.drawable.bg_image)
-
                 .into(view);
 
     }
 
 
-    private void initNet() {
+    /**
+     * 请求网络数据
+     */
+    private void getNetDate() {
+        ApiService apiService = NetClient.getApiService();
+        Observable<BasicData<FuliData>> fuliOb = apiService.getFuliOb(100, 1);
+        fuliOb.subscribeOn(Schedulers.io())
+                .map(new BasicDataListFunc1())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(new Action1<List<FuliData>>() {
+                    @Override
+                    public void call(List<FuliData> fuliDatas) {
 
-        if (cache == null) {//内存没有缓存
+//                        FuliData fuliData = fuliDatas.get(0);
+//                        FuliData fuliData1 = fuliDatasBak.get(0);
+//                        if (fuliData.get_id()!=fuliData1.get_id()) {
+//                            String string = gson.toJson(fuliDatas);
+//                            DataUtil.writeData(dataFile, string);//写入硬盘
+//                            fuliDatasBak = fuliDatas;
+//                        }
+                        String string = gson.toJson(fuliDatas);
+                        DataUtil.writeData(dataFile, string);//写入硬盘
+
+                    }
+                })
+                .doOnTerminate(new Action0() {
+                    @Override
+                    public void call() {
+                    }
+                })
+                .subscribe(cache);//写入缓存
+    }
+
+    /**
+     * 进入页面从缓存加载数据
+     */
+    private void initPic() {
+        if (cache == null) {
             cache = BehaviorSubject.create();
-            List<FuliData> fuliDatas1 = readItems();//看硬盘中是否存在缓存
-            if (fuliDatas1 == null) {  //没有硬盘缓存
-                //  写入缓存  写入硬盘
-                ApiService apiService = NetClient.getApiService();
-                Observable<BasicData<FuliData>> fuliOb = apiService.getFuliOb(100, 1);
+            Observable.create(new Observable.OnSubscribe<List<FuliData>>() {
 
-                fuliOb.subscribeOn(Schedulers.io())
-                        .map(new BasicDataListFunc1())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .doOnNext(new Action1<List<FuliData>>() {
-                            @Override
-                            public void call(List<FuliData> fuliDatas) {
-                                writeItems(fuliDatas);//写入硬盘
-                            }
-                        })
-                        .subscribe(cache);//写入缓存
-
-            } else { //读取硬盘放入缓存
-                cache.onNext(fuliDatas1);
-            }
-        }
-        cache.observeOn(AndroidSchedulers.mainThread()).subscribe(new DateObserver());
-
-
-    }
-
-    public List<FuliData> readItems() {
-        // Hard code adding some delay, to distinguish reading from memory and reading disk clearly
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Reader reader = new FileReader(dataFile);
-            return gson.fromJson(reader, new TypeToken<List<FuliData>>() {
-            }.getType());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-    public void writeItems(List<FuliData> datas) {
-
-        String json = gson.toJson(datas);
-        try {
-            if (!dataFile.exists()) {
-                try {
-                    dataFile.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                @Override
+                public void call(Subscriber<? super List<FuliData>> subscriber) {
+                    List<FuliData> fuliDatas1 = DataUtil.ReadrFuliDatas(dataFile, gson);
+                    if (fuliDatas1 != null) {
+                        subscriber.onNext(fuliDatas1);//从硬盘写入
+                    } else {
+                        getNetDate();//从网络写入
+                    }
                 }
-            }
-            Writer writer = new FileWriter(dataFile);
-            writer.write(json);
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+            }).subscribe(cache);
+
         }
+
+        cache.observeOn(AndroidSchedulers.mainThread()).subscribe(new DataObserver());
+
     }
+
+
 
     /**
      * fuli接口的 Rxjava map数据转换
@@ -319,7 +306,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     /**
      * 图片下载的回调
      */
@@ -388,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 网络请求的数据回调
      */
-    private class DateObserver implements Observer<List<FuliData>> {
+    private class DataObserver implements Observer<List<FuliData>> {
         @Override
         public void onCompleted() {
 
@@ -401,18 +387,18 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onNext(List<FuliData> fuliDatas) {
-            vp.setAdapter(new MyPagerAdapter(fuliDatas));
+                vp.setAdapter(new MyPagerAdapter(fuliDatas));
+                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
+                imageRecAdpter.setHasStableIds(true);
+                imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        Toast.makeText(getApplication(), position + "点击", Toast.LENGTH_SHORT).show();
+                        vp.setCurrentItem(position);
+                    }
+                });
+                rv.setAdapter(imageRecAdpter);
 
-            ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
-            imageRecAdpter.setHasStableIds(true);
-            imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-                    Toast.makeText(getApplication(), position + "", Toast.LENGTH_SHORT).show();
-                    vp.setCurrentItem(position);
-                }
-            });
-            rv.setAdapter(imageRecAdpter);
         }
 
     }
