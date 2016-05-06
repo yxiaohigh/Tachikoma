@@ -1,11 +1,9 @@
 *.iml
 .gradle/
+.idea/
 /local.properties
-/.idea/workspace.xml
-/.idea/libraries
 /build
 /captures
-.idea
 build/
 *.apk
 *.ap_
@@ -15,6 +13,5 @@ gen/
 *.log
 proguard/
 .navigation/
-111
 
 

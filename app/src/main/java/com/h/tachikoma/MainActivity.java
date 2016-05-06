@@ -34,7 +34,6 @@ import java.util.List;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -53,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
     File dataFile;
     private BehaviorSubject<List<FuliData>> cache;
     Gson gson = new Gson();
-    private List<FuliData> fuliDatasBak;
-    private Subscription subscribe;
+    private long startTime;
+    private int stat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,6 +172,9 @@ public class MainActivity extends AppCompatActivity {
                         if (isSaveCache(fuliDatas)) {//判断数据是否变化
                             String string = gson.toJson(fuliDatas);
                             DataUtil.writeData(dataFile, string);//写入硬盘
+                            stat = 3;
+                        } else {
+                            stat = 4;
                         }
                     }
                 })
@@ -192,10 +194,10 @@ public class MainActivity extends AppCompatActivity {
      * @return
      */
     public boolean isSaveCache(List<FuliData> fuliDatas) {
+        List<FuliData> fuliDatasBak = DataUtil.ReadrFuliDatas(dataFile, gson);
         if (fuliDatasBak != null) {
             FuliData fuliData = fuliDatas.get(0);
             FuliData fuliData1 = fuliDatasBak.get(0);
-            fuliDatasBak = fuliDatas;
             if (fuliData.get_id().equals(fuliData1.get_id())) {
                 return false;
             } else {
@@ -209,20 +211,21 @@ public class MainActivity extends AppCompatActivity {
      * 进入页面从缓存加载数据
      */
     private void initPic() {
+        startTime = System.currentTimeMillis();
         if (cache == null) {
             cache = BehaviorSubject.create();
-            subscribe = Observable.create(new Observable.OnSubscribe<List<FuliData>>() {
-
+            Observable.create(new Observable.OnSubscribe<List<FuliData>>() {
                 @Override
                 public void call(Subscriber<? super List<FuliData>> subscriber) {
                     List<FuliData> fuliDatas1 = DataUtil.ReadrFuliDatas(dataFile, gson);
                     if (fuliDatas1 != null) {
                         subscriber.onNext(fuliDatas1);//从硬盘写入
-                    } else {
-                        getNetDate();//从网络写入
+                        stat = 1;
                     }
                 }
             }).subscribe(cache);
+        } else {
+            stat = 2;
         }
 
         cache.observeOn(AndroidSchedulers.mainThread()).subscribe(new DataObserver());
@@ -390,6 +393,9 @@ public class MainActivity extends AppCompatActivity {
      * 网络请求的数据回调
      */
     private class DataObserver implements Observer<List<FuliData>> {
+
+
+
         @Override
         public void onCompleted() {
 
@@ -402,8 +408,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onNext(List<FuliData> fuliDatas) {
-
-            if (isSaveCache(fuliDatas)) {
+            long endTime = System.currentTimeMillis();
                 vp.setAdapter(new MyPagerAdapter(fuliDatas));
                 ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
                 imageRecAdpter.setHasStableIds(true);
@@ -415,7 +420,25 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 rv.setAdapter(imageRecAdpter);
+
+            String str="";
+            switch (stat) {
+                case 1:
+                    str ="从硬盘缓存写入";
+                    break;
+                case 2:
+                    str ="从内存缓存写入";
+                    break;
+                case 3:
+                    str ="有新的内容从网络写入";
+                    break;
+                case 4:
+                    str ="从网络更新";
+                    break;
             }
+            long l = endTime - startTime;
+            Toast.makeText(MainActivity.this, str+"耗费时间"+l , Toast.LENGTH_SHORT).show();
+
 
         }
 
