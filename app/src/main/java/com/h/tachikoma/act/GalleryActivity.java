@@ -1,4 +1,4 @@
-package com.h.tachikoma;
+package com.h.tachikoma.act;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.gson.Gson;
+import com.h.tachikoma.R;
 import com.h.tachikoma.entity.BasicData;
 import com.h.tachikoma.entity.FuliData;
 import com.h.tachikoma.net.ApiService;
@@ -41,11 +42,11 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 
-public class MainActivity extends AppCompatActivity {
+public class GalleryActivity extends AppCompatActivity {
 
 
     private static final String DATA_FILE_NAME = "data_file_name";
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "GalleryActivity";
     private int state1;
     private RecyclerView rv;
     private ViewPager vp;
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main1);
+        setContentView(R.layout.activity_gallery);
         dataFile = new File(getApplication().getFilesDir(), DATA_FILE_NAME);
         initView();
         initPic();
@@ -259,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = View.inflate(context, R.layout.item_imagelist, null);
+            View view = View.inflate(context, R.layout.gallery_item, null);
             ViewHolder holder = new ViewHolder(view);
             view.setOnClickListener(this);
             return holder;
@@ -336,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onException(Exception e, String model, Target<Bitmap> target, boolean isFirstResource) {
-            Toast.makeText(MainActivity.this, "Exception>>" + position, Toast.LENGTH_SHORT).show();
+            Toast.makeText(GalleryActivity.this, "Exception>>" + position, Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -369,8 +370,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
 
-            LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-            View view = inflater.inflate(R.layout.item_imagelist, null);
+            LayoutInflater inflater = LayoutInflater.from(GalleryActivity.this);
+            View view = inflater.inflate(R.layout.gallery_item, null);
             ImageView image = (ImageView) view.findViewById(R.id.image);
 
             FuliData t = fuliDatas.get(position);
@@ -410,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
         public void onNext(List<FuliData> fuliDatas) {
             long endTime = System.currentTimeMillis();
                 vp.setAdapter(new MyPagerAdapter(fuliDatas));
-                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(MainActivity.this, fuliDatas);
+                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(GalleryActivity.this, fuliDatas);
                 imageRecAdpter.setHasStableIds(true);
                 imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
                     @Override
@@ -421,26 +422,33 @@ public class MainActivity extends AppCompatActivity {
                 });
                 rv.setAdapter(imageRecAdpter);
 
-            String str="";
-            switch (stat) {
-                case 1:
-                    str ="从硬盘缓存写入";
-                    break;
-                case 2:
-                    str ="从内存缓存写入";
-                    break;
-                case 3:
-                    str ="有新的内容从网络写入";
-                    break;
-                case 4:
-                    str ="从网络更新";
-                    break;
-            }
-            long l = endTime - startTime;
-            Toast.makeText(MainActivity.this, str+"耗费时间"+l , Toast.LENGTH_SHORT).show();
+            showTimeToast(endTime);
 
 
         }
 
+    }
+
+    /**
+     * @param endTime
+     */
+    private void showTimeToast(long endTime) {
+        String str="";
+        switch (stat) {
+            case 1:
+                str ="从硬盘缓存写入";
+                break;
+            case 2:
+                str ="从内存缓存写入";
+                break;
+            case 3:
+                str ="有新的内容从网络写入";
+                break;
+            case 4:
+                str ="从网络更新";
+                break;
+        }
+        long l = endTime - startTime;
+        Toast.makeText(GalleryActivity.this, str+"耗费时间"+l , Toast.LENGTH_SHORT).show();
     }
 }
