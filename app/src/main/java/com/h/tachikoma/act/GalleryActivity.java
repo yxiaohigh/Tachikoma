@@ -24,7 +24,7 @@ import com.bumptech.glide.request.target.Target;
 import com.google.gson.Gson;
 import com.h.tachikoma.R;
 import com.h.tachikoma.entity.BasicData;
-import com.h.tachikoma.entity.FuliData;
+import com.h.tachikoma.entity.ItemData;
 import com.h.tachikoma.net.ApiService;
 import com.h.tachikoma.net.NetClient;
 import com.h.tachikoma.utli.DataUtil;
@@ -51,7 +51,7 @@ public class GalleryActivity extends AppCompatActivity {
     private RecyclerView rv;
     private ViewPager vp;
     File dataFile;
-    private BehaviorSubject<List<FuliData>> cache;
+    private BehaviorSubject<List<ItemData>> cache;
     Gson gson = new Gson();
     private long startTime;
     private int stat;
@@ -162,16 +162,16 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private void getNetDate() {
         ApiService apiService = NetClient.getApiService();
-        Observable<BasicData<FuliData>> fuliOb = apiService.getFuliOb(100, 1);
+        Observable<BasicData<ItemData>> fuliOb = apiService.getFuliOb(100, 1);
         fuliOb.subscribeOn(Schedulers.io())
                 .map(new BasicDataListFunc1())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext(new Action1<List<FuliData>>() {
+                .doOnNext(new Action1<List<ItemData>>() {
                     @Override
-                    public void call(List<FuliData> fuliDatas) {
+                    public void call(List<ItemData> itemDatas) {
 
-                        if (isSaveCache(fuliDatas)) {//判断数据是否变化
-                            String string = gson.toJson(fuliDatas);
+                        if (isSaveCache(itemDatas)) {//判断数据是否变化
+                            String string = gson.toJson(itemDatas);
                             DataUtil.writeData(dataFile, string);//写入硬盘
                             stat = 3;
                         } else {
@@ -191,15 +191,15 @@ public class GalleryActivity extends AppCompatActivity {
     /**
      * 比较网络请求的数据是否有更新
      *
-     * @param fuliDatas
+     * @param itemDatas
      * @return
      */
-    public boolean isSaveCache(List<FuliData> fuliDatas) {
-        List<FuliData> fuliDatasBak = DataUtil.ReadrFuliDatas(dataFile, gson);
-        if (fuliDatasBak != null) {
-            FuliData fuliData = fuliDatas.get(0);
-            FuliData fuliData1 = fuliDatasBak.get(0);
-            if (fuliData.get_id().equals(fuliData1.get_id())) {
+    public boolean isSaveCache(List<ItemData> itemDatas) {
+        List<ItemData> itemDatasBak = DataUtil.ReadrFuliDatas(dataFile, gson);
+        if (itemDatasBak != null) {
+            ItemData itemData = itemDatas.get(0);
+            ItemData itemData1 = itemDatasBak.get(0);
+            if (itemData.get_id().equals(itemData1.get_id())) {
                 return false;
             } else {
                 return true;
@@ -215,12 +215,12 @@ public class GalleryActivity extends AppCompatActivity {
         startTime = System.currentTimeMillis();
         if (cache == null) {
             cache = BehaviorSubject.create();
-            Observable.create(new Observable.OnSubscribe<List<FuliData>>() {
+            Observable.create(new Observable.OnSubscribe<List<ItemData>>() {
                 @Override
-                public void call(Subscriber<? super List<FuliData>> subscriber) {
-                    List<FuliData> fuliDatas1 = DataUtil.ReadrFuliDatas(dataFile, gson);
-                    if (fuliDatas1 != null) {
-                        subscriber.onNext(fuliDatas1);//从硬盘写入
+                public void call(Subscriber<? super List<ItemData>> subscriber) {
+                    List<ItemData> itemDatas1 = DataUtil.ReadrFuliDatas(dataFile, gson);
+                    if (itemDatas1 != null) {
+                        subscriber.onNext(itemDatas1);//从硬盘写入
                         stat = 1;
                     }
                 }
@@ -236,9 +236,9 @@ public class GalleryActivity extends AppCompatActivity {
     /**
      * fuli接口的 Rxjava map数据转换
      */
-    private static class BasicDataListFunc1 implements Func1<BasicData<FuliData>, List<FuliData>> {
+    private static class BasicDataListFunc1 implements Func1<BasicData<ItemData>, List<ItemData>> {
         @Override
-        public List<FuliData> call(BasicData<FuliData> fuliDataBasicData) {
+        public List<ItemData> call(BasicData<ItemData> fuliDataBasicData) {
             return fuliDataBasicData.getResults();
         }
     }
@@ -249,10 +249,10 @@ public class GalleryActivity extends AppCompatActivity {
     class ImageRecAdpter extends RecyclerView.Adapter implements View.OnClickListener {
 
         private final Context context;
-        private final List<FuliData> data;
+        private final List<ItemData> data;
         private OnRecyclerViewItemClickListener mOnItemClickListener = null;
 
-        public ImageRecAdpter(Context context, List<FuliData> data) {
+        public ImageRecAdpter(Context context, List<ItemData> data) {
             this.context = context;
             this.data = data;
         }
@@ -274,7 +274,7 @@ public class GalleryActivity extends AppCompatActivity {
             ImageView imageView = holder1.imageView;
             TextView image_text = holder1.image_text;
 
-            FuliData t = data.get(position);
+            ItemData t = data.get(position);
             String url = t.getUrl();
             getPic(url, imageView, position, true);
             image_text.setText(position + 1 + "");
@@ -351,15 +351,15 @@ public class GalleryActivity extends AppCompatActivity {
      * PagerAdapter
      */
     private class MyPagerAdapter extends PagerAdapter {
-        private List<FuliData> fuliDatas;
+        private List<ItemData> itemDatas;
 
-        public MyPagerAdapter(List<FuliData> fuliDatas) {
-            this.fuliDatas = fuliDatas;
+        public MyPagerAdapter(List<ItemData> itemDatas) {
+            this.itemDatas = itemDatas;
         }
 
         @Override
         public int getCount() {
-            return fuliDatas.size();
+            return itemDatas.size();
         }
 
         @Override
@@ -374,7 +374,7 @@ public class GalleryActivity extends AppCompatActivity {
             View view = inflater.inflate(R.layout.gallery_item, null);
             ImageView image = (ImageView) view.findViewById(R.id.image);
 
-            FuliData t = fuliDatas.get(position);
+            ItemData t = itemDatas.get(position);
             String url = t.getUrl();
             getPic(url, image, position, false);
 
@@ -393,7 +393,7 @@ public class GalleryActivity extends AppCompatActivity {
     /**
      * 网络请求的数据回调
      */
-    private class DataObserver implements Observer<List<FuliData>> {
+    private class DataObserver implements Observer<List<ItemData>> {
 
 
 
@@ -408,10 +408,10 @@ public class GalleryActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onNext(List<FuliData> fuliDatas) {
+        public void onNext(List<ItemData> itemDatas) {
             long endTime = System.currentTimeMillis();
-                vp.setAdapter(new MyPagerAdapter(fuliDatas));
-                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(GalleryActivity.this, fuliDatas);
+                vp.setAdapter(new MyPagerAdapter(itemDatas));
+                ImageRecAdpter imageRecAdpter = new ImageRecAdpter(GalleryActivity.this, itemDatas);
                 imageRecAdpter.setHasStableIds(true);
                 imageRecAdpter.setOnItemClickListener(imageRecAdpter.new OnRecyclerViewItemClickListener() {
                     @Override

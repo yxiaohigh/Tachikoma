@@ -3,7 +3,7 @@ package com.h.tachikoma.entity;
 /**
  * Created by tony on 2016/4/13.
  */
-public class FuliData {
+public class ItemData {
 
     /**
      * _id : 570c5e906776590f62db7b9b

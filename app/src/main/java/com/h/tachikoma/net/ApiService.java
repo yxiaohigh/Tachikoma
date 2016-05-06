@@ -1,8 +1,7 @@
 package com.h.tachikoma.net;
 
-import com.h.tachikoma.entity.AndroidData;
 import com.h.tachikoma.entity.BasicData;
-import com.h.tachikoma.entity.FuliData;
+import com.h.tachikoma.entity.ItemData;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -24,12 +23,12 @@ public interface ApiService {
     Call<ResponseBody> getRepos(@Path("type") String user, @Path("amount") int amount, @Path("page") int page);
 
     @GET("Android/{amount}/{page}")
-    Call<BasicData<AndroidData>> getAndroid( @Path("amount") int amount, @Path("page") int page);
+    Call<BasicData<ItemData>> getAndroid( @Path("amount") int amount, @Path("page") int page);
 
     @GET("福利/{amount}/{page}")
-    Call<BasicData<FuliData>> getFuli(@Path("amount") int amount, @Path("page") int page);
+    Call<BasicData<ItemData>> getFuli(@Path("amount") int amount, @Path("page") int page);
 
     @GET("福利/{amount}/{page}")
-    Observable<BasicData<FuliData>> getFuliOb(@Path("amount") int amount, @Path("page") int page);
+    Observable<BasicData<ItemData>> getFuliOb(@Path("amount") int amount, @Path("page") int page);
 
 }

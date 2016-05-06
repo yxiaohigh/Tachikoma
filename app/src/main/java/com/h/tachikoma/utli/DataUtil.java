@@ -2,7 +2,7 @@ package com.h.tachikoma.utli;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.h.tachikoma.entity.FuliData;
+import com.h.tachikoma.entity.ItemData;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,11 +50,11 @@ public class DataUtil {
      * @param dataFile
      * @param gson
      */
-    public static List<FuliData> ReadrFuliDatas(File dataFile, Gson gson) {
+    public static List<ItemData> ReadrFuliDatas(File dataFile, Gson gson) {
          Reader reader = null;
         try {
             reader = new FileReader(dataFile);
-            return gson.fromJson(reader, new TypeToken<List<FuliData>>() {
+            return gson.fromJson(reader, new TypeToken<List<ItemData>>() {
             }.getType());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
