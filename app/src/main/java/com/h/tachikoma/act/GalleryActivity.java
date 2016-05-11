@@ -42,6 +42,9 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 
+/**
+ * 图片展示
+ */
 public class GalleryActivity extends AppCompatActivity {
 
 
