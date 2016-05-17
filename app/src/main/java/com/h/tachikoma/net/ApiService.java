@@ -22,13 +22,18 @@ public interface ApiService {
     @GET("{type}/{amount}/{page}")
     Call<ResponseBody> getRepos(@Path("type") String user, @Path("amount") int amount, @Path("page") int page);
 
-    @GET("Android/{amount}/{page}")
-    Call<BasicData<ItemData>> getAndroid( @Path("amount") int amount, @Path("page") int page);
 
-    @GET("福利/{amount}/{page}")
-    Call<BasicData<ItemData>> getFuli(@Path("amount") int amount, @Path("page") int page);
 
     @GET("福利/{amount}/{page}")
     Observable<BasicData<ItemData>> getFuliOb(@Path("amount") int amount, @Path("page") int page);
+
+    @GET("all/{amount}/{page}")
+    Observable<BasicData<ItemData>> getAllOb(@Path("amount") int amount, @Path("page") int page);
+
+    @GET("Android/{amount}/{page}")
+    Observable<BasicData<ItemData>> getAndroidOb(@Path("amount") int amount, @Path("page") int page);
+
+    @GET("ios/{amount}/{page}")
+    Observable<BasicData<ItemData>> getIosOb(@Path("amount") int amount, @Path("page") int page);
 
 }
