@@ -14,14 +14,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // 定制流程
-        setContentView();
         initViews();
-        initListeners();
         initData();
     }
 
-    protected abstract void setContentView();
     protected abstract void initViews();
-    protected abstract void initListeners();
     protected abstract void initData();
 }

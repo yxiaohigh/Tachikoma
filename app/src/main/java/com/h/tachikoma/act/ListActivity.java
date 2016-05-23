@@ -10,21 +10,13 @@ public class ListActivity extends BaseActivity{
         super.onCreate(savedInstanceState);
     }
 
-    @Override
-    protected void setContentView() {
-
-    }
-
 
     @Override
     protected void initViews() {
 
     }
 
-    @Override
-    protected void initListeners() {
 
-    }
 
     @Override
     protected void initData() {

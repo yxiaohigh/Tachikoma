@@ -4,53 +4,60 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <android.support.design.widget.AppBarLayout
-        android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="140dp">
 
         <android.support.design.widget.CollapsingToolbarLayout
-            android:id="@+id/coll_toolbar"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed"
-            app:contentScrim="@color/colorPrimary"
+            android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
-            app:expandedTitleMarginStart="48dp"
-            app:expandedTitleMarginEnd="64dp"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            app:contentScrim="@color/colorPrimary"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:titleEnabled="true">
 
             <ImageView
-                android:id="@+id/image"
-                android:src="@mipmap/bg_1"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
+                android:src="@mipmap/bg_1"
                 app:layout_collapseMode="parallax" />
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
-                app:layout_collapseMode="pin"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="40dp"
+                app:layout_collapseMode="pin">
 
             </android.support.v7.widget.Toolbar>
-        </android.support.design.widget.CollapsingToolbarLayout>
 
+        </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyc_view"
+    <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    </android.support.v7.widget.RecyclerView>
+        <WebView
+            android:id="@+id/web_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </android.support.v4.widget.NestedScrollView>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/float_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:layout_anchor="@id/app_bar"
-        app:layout_anchorGravity="right|bottom" />
+    <ProgressBar
+        android:id="@+id/progrss_bar"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:indeterminateDrawable="@drawable/progressbar_rotate" />
+
+    <ViewStub
+        android:id="@+id/stub_err"
+        android:inflatedId="@+id/err_view"
+        android:layout="@layout/err_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </android.support.design.widget.CoordinatorLayout>
