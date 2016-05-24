@@ -13,7 +13,6 @@ public class NetUtil {
     /**
      *
      * 判断网络是否连接
-     * @param context
      * @return
      */
     public static boolean isNetWorkAvailable(Context context) {

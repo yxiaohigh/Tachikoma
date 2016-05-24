@@ -1,19 +1,25 @@
 package com.h.tachikoma.act;
 
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewStub;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.h.tachikoma.R;
 import com.h.tachikoma.utli.NetUtil;
@@ -22,7 +28,7 @@ import com.h.tachikoma.utli.PicUtil;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends BaseActivity {
+public class DetailActivity extends BaseActivity {
 
 
     @BindView(R.id.toolbar)
@@ -40,11 +46,14 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initViews() {
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
         progrssBar.setVisibility(View.GONE);
         webView.setWebViewClient(new MyWebViewClient());
+        ActionBar supportActionBar = getSupportActionBar();
+        supportActionBar.setDisplayHomeAsUpEnabled(true);
+        supportActionBar.setDisplayShowHomeEnabled(true);
 
     }
 
@@ -52,7 +61,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initData() {
 
-        collapsingToolbar.setTitle("sssssssssssss");
+        collapsingToolbar.setTitle("Sssssssssssss");
 
         WebSettings settings = webView.getSettings();
         netWorkAvailable = NetUtil.isNetWorkAvailable(getApplicationContext());
@@ -66,10 +75,29 @@ public class MainActivity extends BaseActivity {
         }
 
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.bg_1);
-        int rgb2 = PicUtil.getRgb2(bitmap);
+        int rgb2 = PicUtil.getRgb2(bitmap, 2);
         collapsingToolbar.setContentScrimColor(rgb2);
         webView.loadUrl("http://m.xiachufang.com/");
 
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // TODO: add setContentView(...) invocation
+        ButterKnife.bind(this);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -79,7 +107,10 @@ public class MainActivity extends BaseActivity {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return super.shouldOverrideUrlLoading(view, url);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            startActivity(intent);
+            return true;
         }
 
         @Override
@@ -100,12 +131,11 @@ public class MainActivity extends BaseActivity {
 
         }
 
-
         @Override
-        public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
-            super.onReceivedHttpError(view, request, errorResponse);
+        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+           // super.onReceivedError(view, request, error);
+            Toast.makeText(DetailActivity.this, "kljkljljl", Toast.LENGTH_SHORT).show();
             stubErr.inflate();
-
         }
     }
 }
