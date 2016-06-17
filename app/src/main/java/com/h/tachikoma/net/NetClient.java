@@ -9,52 +9,52 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * 网络工具
+ * 网络工具 单例
  * Created by tony on 2016/4/19.
  */
 public class NetClient {
 
-    private static String path=ApiService.PATH;
+    private static NetApi netApi;
+    private static OkHttpClient okHttpClient;
 
-    /**
-     * 得到okhttpclien
-     * @return
-     */
-    public static OkHttpClient initClient(){
+    static {
         HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+        okHttpClient = new OkHttpClient.Builder()
                 .addInterceptor(httpLoggingInterceptor)
                 .retryOnConnectionFailure(true)
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .build();
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(NetApi.PATH)
+                .client(initClient())
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .build();
+        netApi = retrofit.create(NetApi.class);
+    }
+
+    /**
+     * 得到okhttpclien
+     *
+     * @return
+     */
+    public static OkHttpClient initClient() {
 
         return okHttpClient;
     }
 
 
     /**
-     * 得到retrofit
-     * @return
-     */
-    public static Retrofit initRetrofit() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(path)
-                .client(initClient())
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-        return retrofit;
-
-    }
-
-    /**
      * 得到可用请求类
+     *
      * @return
      */
-    public static ApiService getApiService() {
-        ApiService apiService = initRetrofit().create(ApiService.class);
-        return apiService;
+    public static NetApi getNetApi() {
+
+        return netApi;
     }
 
 }

@@ -16,13 +16,11 @@ import rx.Observable;
  */
 
 
-public interface ApiService {
+public interface NetApi {
     String PATH="http://gank.io/api/data/";
 
     @GET("{type}/{amount}/{page}")
     Call<ResponseBody> getRepos(@Path("type") String user, @Path("amount") int amount, @Path("page") int page);
-
-
 
     @GET("福利/{amount}/{page}")
     Observable<BasicData<ItemData>> getFuliOb(@Path("amount") int amount, @Path("page") int page);

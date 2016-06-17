@@ -25,7 +25,7 @@ import com.google.gson.Gson;
 import com.h.tachikoma.R;
 import com.h.tachikoma.entity.BasicData;
 import com.h.tachikoma.entity.ItemData;
-import com.h.tachikoma.net.ApiService;
+import com.h.tachikoma.net.NetApi;
 import com.h.tachikoma.net.NetClient;
 import com.h.tachikoma.utli.DataUtil;
 
@@ -164,8 +164,8 @@ public class GalleryActivity extends AppCompatActivity {
      * 请求网络数据
      */
     private void getNetDate() {
-        ApiService apiService = NetClient.getApiService();
-        Observable<BasicData<ItemData>> fuliOb = apiService.getFuliOb(100, 1);
+        NetApi netApi = NetClient.getNetApi();
+        Observable<BasicData<ItemData>> fuliOb = netApi.getFuliOb(100, 1);
         fuliOb.subscribeOn(Schedulers.io())
                 .map(new BasicDataListFunc1())
                 .observeOn(AndroidSchedulers.mainThread())

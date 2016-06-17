@@ -1,23 +1,27 @@
-package com.h.tachikoma.act;
+package com.h.tachikoma.base;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.FragmentActivity;
 
 /**
- * BaseActivity
- * Created by tony on 2016/5/6.
+ * Created by tony on 2016/6/17.
  */
-public abstract class BaseActivity extends AppCompatActivity {
-
+public abstract class BaseFragmentActivity extends FragmentActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 定制流程
+        setContent();
         initViews();
         initData();
     }
+    protected abstract void setContent();
 
     protected abstract void initViews();
+
     protected abstract void initData();
+
+
+
+
 }

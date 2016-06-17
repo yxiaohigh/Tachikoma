@@ -22,6 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.h.tachikoma.R;
+import com.h.tachikoma.base.BaseActivity;
 import com.h.tachikoma.utli.NetUtil;
 import com.h.tachikoma.utli.PicUtil;
 
@@ -43,10 +44,14 @@ public class DetailActivity extends BaseActivity {
     ViewStub stubErr;
     private boolean netWorkAvailable;
 
+    @Override
+    protected void setContent() {
+        setContentView(R.layout.activity_detail);
+    }
+
 
     @Override
     protected void initViews() {
-        setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
         progrssBar.setVisibility(View.GONE);
