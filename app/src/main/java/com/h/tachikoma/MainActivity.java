@@ -10,7 +10,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.h.tachikoma.base.BaseFragmentActivity;
 import com.h.tachikoma.dummy.DummyContent;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -39,22 +40,25 @@ public class MainActivity extends BaseFragmentActivity implements ItemFragment.O
 
     @Override
     protected void initData() {
-        HashMap<String, Fragment> map = new HashMap<>();
+        List<Fragment> fragmentlist = new ArrayList<>();
+        List<String> titlelist = new ArrayList<>();
         ItemFragment itemFragment1 = ItemFragment.newInstance(1);
         ItemFragment itemFragment2 = ItemFragment.newInstance(1);
         ItemFragment itemFragment3 = ItemFragment.newInstance(1);
-        map.put("第1页",itemFragment1);
-        map.put("第2页",itemFragment2);
-        map.put("第3页",itemFragment3);
-        MainFragmentPagerAdapter mainFragmentPagerAdapter = new MainFragmentPagerAdapter(this.getSupportFragmentManager(), map);
-  /*      List<String> titlelist = mainFragmentPagerAdapter.getTitlelist();
+        fragmentlist.add(itemFragment1);
+        fragmentlist.add(itemFragment2);
+        fragmentlist.add(itemFragment3);
+        titlelist.add("第一页");
+        titlelist.add("第二页");
+        titlelist.add("第三页");
+        MainFragmentPagerAdapter mainFragmentPagerAdapter = new MainFragmentPagerAdapter(this.getSupportFragmentManager(), fragmentlist);
+        vp.setAdapter(mainFragmentPagerAdapter);
+        tab.setupWithViewPager(vp);
+        tab.removeAllTabs();
         for (String s : titlelist) {
             tab.addTab(tab.newTab().setText(s));
         }
-        tab.addTab(tab.newTab().setText("dsfsdf"));*/
-        vp.setAdapter(mainFragmentPagerAdapter);
         tab.setTabMode(TabLayout.MODE_FIXED);
-        tab.setupWithViewPager(vp);
     }
 
 
