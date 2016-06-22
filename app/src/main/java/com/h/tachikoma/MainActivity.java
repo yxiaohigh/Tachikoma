@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.h.tachikoma.base.BaseFragmentActivity;
 import com.h.tachikoma.dummy.DummyContent;
 
@@ -24,7 +23,6 @@ public class MainActivity extends BaseFragmentActivity implements ItemFragment.O
     @BindView(R.id.vp)
     ViewPager vp;
 
-    private GoogleApiClient client;
 
     @Override
     protected void setContent() {
@@ -51,13 +49,9 @@ public class MainActivity extends BaseFragmentActivity implements ItemFragment.O
         titlelist.add("第一页");
         titlelist.add("第二页");
         titlelist.add("第三页");
-        MainFragmentPagerAdapter mainFragmentPagerAdapter = new MainFragmentPagerAdapter(this.getSupportFragmentManager(), fragmentlist);
+        MainFragmentPagerAdapter mainFragmentPagerAdapter = new MainFragmentPagerAdapter(this.getSupportFragmentManager(), fragmentlist,titlelist);
         vp.setAdapter(mainFragmentPagerAdapter);
         tab.setupWithViewPager(vp);
-        tab.removeAllTabs();
-        for (String s : titlelist) {
-            tab.addTab(tab.newTab().setText(s));
-        }
         tab.setTabMode(TabLayout.MODE_FIXED);
     }
 

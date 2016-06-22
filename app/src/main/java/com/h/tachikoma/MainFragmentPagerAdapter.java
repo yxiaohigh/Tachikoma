@@ -7,19 +7,18 @@ import android.support.v4.app.FragmentPagerAdapter;
 import java.util.List;
 
 /**
+ * 主页fragment adapter
  * Created by tony on 2016/6/17.
  */
 public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
-    List<Fragment> fragmentlist;
+    private final List<String> titleList;
+    private List<Fragment> fragmentlist;
 
 
-    /**
-     * @param fm
-     * @param list key: 为标题 ,map: 为fragment
-     */
-    public MainFragmentPagerAdapter(FragmentManager fm, List<Fragment> list) {
+    public MainFragmentPagerAdapter(FragmentManager fm, List<Fragment> fragmentlist, List<String> titlelist) {
         super(fm);
-        fragmentlist = list;
+        this.fragmentlist = fragmentlist;
+        this.titleList=titlelist;
     }
 
     @Override
@@ -32,4 +31,8 @@ public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
         return fragmentlist.size();
     }
 
+    @Override
+    public CharSequence getPageTitle(int position) {
+        return titleList.get(position);
+    }
 }
