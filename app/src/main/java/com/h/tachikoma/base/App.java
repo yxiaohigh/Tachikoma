@@ -2,6 +2,9 @@ package com.h.tachikoma.base;
 
 import android.app.Application;
 
+import com.h.tachikoma.di.module.AppComponent;
+import com.h.tachikoma.di.module.AppModule;
+import com.h.tachikoma.di.module.DaggerAppComponent;
 import com.squareup.leakcanary.LeakCanary;
 
 /**
@@ -10,16 +13,23 @@ import com.squareup.leakcanary.LeakCanary;
  */
 public class App extends Application {
 
-    private static Application app;
+    private static App app;
+    private AppComponent component;
 
     @Override
     public void onCreate() {
         super.onCreate();
         LeakCanary.install(this);
+        component = DaggerAppComponent.builder().appModule(new AppModule(this)).build();
         app = this;
+
     }
 
-    public static Application getApplication() {
+    public AppComponent getCommponent() {
+        return component;
+    }
+
+    public static App getApplication() {
         return app;
     }
 }
