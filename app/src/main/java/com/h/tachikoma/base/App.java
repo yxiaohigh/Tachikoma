@@ -2,9 +2,9 @@ package com.h.tachikoma.base;
 
 import android.app.Application;
 
-import com.h.tachikoma.di.module.AppComponent;
+import com.h.tachikoma.di.commponent.AppComponent;
+import com.h.tachikoma.di.commponent.DaggerAppComponent;
 import com.h.tachikoma.di.module.AppModule;
-import com.h.tachikoma.di.module.DaggerAppComponent;
 import com.squareup.leakcanary.LeakCanary;
 
 /**
