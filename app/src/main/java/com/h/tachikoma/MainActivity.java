@@ -1,11 +1,13 @@
 package com.h.tachikoma;
 
+import android.content.Intent;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.widget.Toast;
 
+import com.h.tachikoma.act.TestActivity;
 import com.h.tachikoma.base.BaseFragmentActivity;
 import com.h.tachikoma.dummy.DummyContent;
 
@@ -65,6 +67,9 @@ public class MainActivity extends BaseFragmentActivity implements ItemFragment.O
         String id = item.id;
         Toast.makeText(MainActivity.this, id, Toast.LENGTH_SHORT).show();
         Snackbar.make(vp, id, Snackbar.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(this, TestActivity.class);
+        this.startActivity(intent);
     }
 
 }

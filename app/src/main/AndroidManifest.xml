@@ -19,9 +19,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".act.GalleryActivity" />
         <activity android:name=".act.DetailActivity" />
+        <activity android:name=".act.TestActivity"/>
 
+        <service
+            android:name=".MyIntentService"
+            android:exported="false"></service>
     </application>
+
 
 </manifest>

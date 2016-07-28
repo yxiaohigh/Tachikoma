@@ -38,18 +38,6 @@ public class AppModule {
 
     @Provides
     @Singleton
-    NetApi provideNetApi(OkHttpClient okHttpClient) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(NetApi.PATH)
-                .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-        return retrofit.create(NetApi.class);
-    }
-
-    @Provides
-    @Singleton
     OkHttpClient provideOkHttpClient() {
         HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -58,6 +46,18 @@ public class AppModule {
                 .retryOnConnectionFailure(true)
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .build();
+    }
+
+    @Provides
+    @Singleton
+    NetApi provideNetApi(OkHttpClient okHttpClient) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(NetApi.PATH)
+                .client(okHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .build();
+        return retrofit.create(NetApi.class);
     }
 
 
