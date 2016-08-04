@@ -22,7 +22,7 @@
 
         <activity android:name=".act.GalleryActivity" />
         <activity android:name=".act.DetailActivity" />
-        <activity android:name=".act.TestActivity"/>
+        <activity android:name=".act.SwNightActivity"/>
 
         <service
             android:name=".MyIntentService"

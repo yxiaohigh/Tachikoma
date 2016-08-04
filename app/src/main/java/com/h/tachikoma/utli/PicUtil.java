@@ -1,8 +1,12 @@
 package com.h.tachikoma.utli;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.support.v7.graphics.Palette;
+import android.view.Display;
+import android.view.View;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -43,7 +47,7 @@ public class PicUtil {
      * 从存储中获取bitmap
      *
      * @param file
-     * @param w
+     * @param w 大小
      * @param h
      */
     public static Bitmap getBitmapFroFile(File file, int w, int h) {
@@ -83,5 +87,38 @@ public class PicUtil {
         }
         return null;
 
+    }
+
+    /**
+     * 从存储中获取bitmap
+     * @param file
+     * @return
+     */
+    public static Bitmap getBitmapFroFile(File file) {
+       return getBitmapFroFile(file, 0, 0);
+    }
+
+    /**
+     * 得到屏幕截图
+     * @param activity
+     * @return
+     */
+    public static Bitmap getScreenBitmap(Activity activity) {
+        View decorView = activity.getWindow().getDecorView();
+
+        Rect rect = new Rect();
+        decorView.getWindowVisibleDisplayFrame(rect);
+        int statusBarHeights = rect.top;
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        // 获取屏幕高
+        int heigh = display.getHeight();
+        int width = display.getWidth();
+
+        decorView.buildDrawingCache();
+        Bitmap drawingCache = decorView.getDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(drawingCache, 0, statusBarHeights, width, heigh - statusBarHeights);
+        decorView.destroyDrawingCache();
+
+        return bitmap;
     }
 }
