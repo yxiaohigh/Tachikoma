@@ -1,11 +1,13 @@
-package com.h.tachikoma;
+package com.h.tachikoma.act;
 
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.widget.Toast;
 
+import com.h.tachikoma.ItemFragment;
+import com.h.tachikoma.MainFragmentPagerAdapter;
+import com.h.tachikoma.R;
 import com.h.tachikoma.base.BaseActivity;
 import com.h.tachikoma.dummy.DummyContent;
 import com.h.tachikoma.utli.CommonUtil;
@@ -64,7 +66,6 @@ public class MainActivity extends BaseActivity implements ItemFragment.OnListFra
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
 
         String id = item.id;
-        Toast.makeText(MainActivity.this, id, Toast.LENGTH_SHORT).show();
         Snackbar.make(vp, id, Snackbar.LENGTH_SHORT).show();
         //白天黑夜模式转换
         CommonUtil.SwNighAndDay(this);

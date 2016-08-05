@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
-    <color name="backgroundc">#FFFFFFFF</color>
+    <!---->
+    <color name="backgroundc">#ffffff</color>
     <color name="textcolor">#000000</color>
+
+    <color name="shape_progressbar1">#2843d9</color>
+    <color name="shape_progressbar2">#ea3d3d</color>
+    <color name="shape_progressbar3">#aed912</color>
 
 </resources>

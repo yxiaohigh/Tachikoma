@@ -25,7 +25,7 @@ public class SwNightActivity extends BaseActivity {
 
     @Override
     protected void setContent() {
-        setContentView(R.layout.test_activity);
+        setContentView(R.layout.sw_nigh_activity);
 
     }
 
@@ -52,6 +52,7 @@ public class SwNightActivity extends BaseActivity {
 
         AlphaAnimation alphaAnimation = new AlphaAnimation(1.0f, 0.0f);
         alphaAnimation.setDuration(1500);
+        alphaAnimation.setFillAfter(true);
         alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {

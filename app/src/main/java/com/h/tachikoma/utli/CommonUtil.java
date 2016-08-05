@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.v7.app.AppCompatDelegate;
 
-import com.h.tachikoma.MainActivity;
+import com.h.tachikoma.act.MainActivity;
 import com.h.tachikoma.R;
 import com.h.tachikoma.act.SwNightActivity;
 import com.h.tachikoma.base.App;
