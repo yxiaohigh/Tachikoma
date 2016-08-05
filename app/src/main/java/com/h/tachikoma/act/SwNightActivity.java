@@ -1,7 +1,6 @@
 package com.h.tachikoma.act;
 
 import android.graphics.Bitmap;
-import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
@@ -32,13 +31,7 @@ public class SwNightActivity extends BaseActivity {
     @Override
     protected void initViews() {
         ButterKnife.bind(this);
-        imageBg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-                overridePendingTransition(0,0);
-            }
-        });
+
     }
 
     @Override
@@ -61,6 +54,7 @@ public class SwNightActivity extends BaseActivity {
 
             @Override
             public void onAnimationEnd(Animation animation) {
+                App.getApplication().removeAppArrayMap(getString(R.string.night_cache));
                 finish();
                 overridePendingTransition(0,0);
             }

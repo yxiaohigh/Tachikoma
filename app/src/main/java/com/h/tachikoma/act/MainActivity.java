@@ -1,16 +1,21 @@
 package com.h.tachikoma.act;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Build;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatDelegate;
 
 import com.h.tachikoma.ItemFragment;
 import com.h.tachikoma.MainFragmentPagerAdapter;
 import com.h.tachikoma.R;
+import com.h.tachikoma.base.App;
 import com.h.tachikoma.base.BaseActivity;
 import com.h.tachikoma.dummy.DummyContent;
-import com.h.tachikoma.utli.CommonUtil;
+import com.h.tachikoma.utli.PicUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +31,12 @@ public class MainActivity extends BaseActivity implements ItemFragment.OnListFra
     @BindView(R.id.vp)
     ViewPager vp;
 
-
     @Override
     protected void setContent() {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
     }
+
 
     @Override
     protected void initViews() {
@@ -58,7 +63,6 @@ public class MainActivity extends BaseActivity implements ItemFragment.OnListFra
         tab.setTabMode(TabLayout.MODE_FIXED);
     }
 
-
     /**
      * fragment 列表点击的回调
      */
@@ -68,7 +72,45 @@ public class MainActivity extends BaseActivity implements ItemFragment.OnListFra
         String id = item.id;
         Snackbar.make(vp, id, Snackbar.LENGTH_SHORT).show();
         //白天黑夜模式转换
-        CommonUtil.SwNighAndDay(this);
+        SwNighAndDay(this);
+    }
+
+
+    /**
+     * 切换白天黑夜模式
+     *
+     * @param activity
+     * 得到重启activity截图 保存截图
+     * 判断模式 切换模式
+     * 跳转SwNightActivity
+     * 取出activity截图显示
+     * 动画渐渐隐藏 关闭SwNightActivity (为了重启activity时不闪屏)
+     * 重启activity
+     */
+    public static void SwNighAndDay(MainActivity activity) {
+        Bitmap bitmap = PicUtil.getScreenBitmap(activity);
+        App.getApplication().putAppArrayMap(activity.getString(R.string.night_cache),bitmap);
+
+        int defaultNightMode = AppCompatDelegate.getDefaultNightMode();
+        switch (defaultNightMode) {
+            case AppCompatDelegate.MODE_NIGHT_NO:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+            case AppCompatDelegate.MODE_NIGHT_YES:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            default:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+
+        }
+
+        Intent intent = new Intent(activity, SwNightActivity.class);
+        activity.startActivity(intent);
+        activity.overridePendingTransition(0, 0);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            activity.recreate();
+        }
     }
 
 
