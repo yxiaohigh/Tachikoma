@@ -1,6 +1,5 @@
 package com.h.tachikoma.di.commponent;
 
-import android.app.Application;
 import android.content.Context;
 
 import com.h.tachikoma.di.module.AppModule;
@@ -17,8 +16,6 @@ import okhttp3.OkHttpClient;
 @Singleton
 @Component(modules = AppModule.class)
 public interface AppComponent {
-
-   void  inject(Application application);
 
     Context getContext();
 

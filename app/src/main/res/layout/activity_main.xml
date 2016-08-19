@@ -5,6 +5,9 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".act.MainActivity"
+    android:divider="@drawable/vertical_divider"
+    android:dividerPadding="5dp"
+    android:showDividers="middle"
     android:orientation="vertical">
 
   <android.support.design.widget.TabLayout
@@ -14,11 +17,17 @@
       app:tabSelectedTextColor="@android:color/darker_gray"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"/>
-
+  <com.h.tachikoma.view.ProgressView
+      android:id="@+id/sss"
+      app:mh="12dp"
+      android:layout_width="200dp"
+      android:layout_height="200dp" />
     <android.support.v4.view.ViewPager
         android:id="@+id/vp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+
 
 
 </LinearLayout>

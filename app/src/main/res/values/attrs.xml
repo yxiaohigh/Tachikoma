@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="mProgressView">
+        <attr name="mw" format="dimension" />
+        <attr name="mh" format="dimension" />
+    </declare-styleable>
+        <attr name="Ptm" format="reference"  />
+</resources>

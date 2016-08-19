@@ -34,14 +34,15 @@ public class MainActivity extends BaseActivity implements ItemFragment.OnListFra
     @Override
     protected void setContent() {
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+
+
     }
 
 
     @Override
     protected void initViews() {
-
-
+        ButterKnife.bind(this);
+       
     }
 
     @Override
@@ -79,40 +80,40 @@ public class MainActivity extends BaseActivity implements ItemFragment.OnListFra
     /**
      * 切换白天黑夜模式
      *
-     * @param activity
-     * 得到重启activity截图 保存截图
-     * 判断模式 切换模式
-     * 跳转SwNightActivity
-     * 取出activity截图显示
-     * 动画渐渐隐藏 关闭SwNightActivity (为了重启activity时不闪屏)
-     * 重启activity
+     * @param activity 得到重启activity截图 保存截图
+     *                 判断模式 切换模式
+     *                 跳转SwNightActivity
+     *                 取出activity截图显示
+     *                 动画渐渐隐藏 关闭SwNightActivity (为了重启activity时不闪屏)
+     *                 重启activity
      */
     public static void SwNighAndDay(MainActivity activity) {
-        Bitmap bitmap = PicUtil.getScreenBitmap(activity);
-        App.getApplication().putAppArrayMap(activity.getString(R.string.night_cache),bitmap);
-
-        int defaultNightMode = AppCompatDelegate.getDefaultNightMode();
-        switch (defaultNightMode) {
-            case AppCompatDelegate.MODE_NIGHT_NO:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                break;
-            case AppCompatDelegate.MODE_NIGHT_YES:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                break;
-            default:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-
-        }
-
-        Intent intent = new Intent(activity, SwNightActivity.class);
-        activity.startActivity(intent);
-        activity.overridePendingTransition(0, 0);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+
+            Bitmap bitmap = PicUtil.getScreenBitmap(activity);
+            App.getApplication().putAppArrayMap(activity.getString(R.string.night_cache), bitmap);
+
+            int defaultNightMode = AppCompatDelegate.getDefaultNightMode();
+            switch (defaultNightMode) {
+                case AppCompatDelegate.MODE_NIGHT_NO:
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                    break;
+                case AppCompatDelegate.MODE_NIGHT_YES:
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                    break;
+                default:
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+
+            }
+
+            Intent intent = new Intent(activity, SwNightActivity.class);
+            activity.startActivity(intent);
+            activity.overridePendingTransition(0, 0);
+
+
             activity.recreate();
         }
     }
-
-
 
 }
