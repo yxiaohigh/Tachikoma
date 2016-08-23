@@ -19,6 +19,7 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 
 /**
+ * 图片处理工具
  * Created by tony on 2016/5/23.
  */
 public class PicUtil {
@@ -36,16 +37,16 @@ public class PicUtil {
         Palette.Swatch vibrantSwatch = generate.getVibrantSwatch();
         Palette.Swatch darkVibrantSwatch = generate.getDarkVibrantSwatch();
         Palette.Swatch darkMutedSwatch = generate.getDarkMutedSwatch();
-        int color = 0;
+        int color ;
         switch (i) {
             case 1:
-                color = vibrantSwatch.getRgb();
+                color = vibrantSwatch != null ? vibrantSwatch.getRgb() : 0;
                 break;
             case 2:
-                color = darkVibrantSwatch.getRgb();
+                color = darkVibrantSwatch != null ? darkVibrantSwatch.getRgb() : 0;
                 break;
             default:
-                color = darkMutedSwatch.getRgb();
+                color = darkMutedSwatch != null ? darkMutedSwatch.getRgb() : 0;
         }
         return color;
     }
@@ -88,7 +89,7 @@ public class PicUtil {
             float max = Math.max(ws, hs);
             options.inJustDecodeBounds = false;
             options.inSampleSize = (int) max;
-            WeakReference<Bitmap> weak = new WeakReference<Bitmap>(BitmapFactory.decodeFile(absolutePath, options));
+            WeakReference<Bitmap> weak = new WeakReference<>(BitmapFactory.decodeFile(absolutePath, options));
             return Bitmap.createScaledBitmap(weak.get(), w, h, true);
 
         }
@@ -118,12 +119,12 @@ public class PicUtil {
         int statusBarHeights = rect.top;
         Display display = activity.getWindowManager().getDefaultDisplay();
         // 获取屏幕高
-        int heigh = display.getHeight();
+        int height = display.getHeight();
         int width = display.getWidth();
 
         decorView.buildDrawingCache();
         Bitmap drawingCache = decorView.getDrawingCache();
-        Bitmap bitmap = Bitmap.createBitmap(drawingCache, 0, statusBarHeights, width, heigh - statusBarHeights);
+        Bitmap bitmap = Bitmap.createBitmap(drawingCache, 0, statusBarHeights, width, height - statusBarHeights);
         decorView.destroyDrawingCache();
 
         return bitmap;

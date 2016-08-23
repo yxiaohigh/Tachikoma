@@ -29,11 +29,7 @@ public class DataUtil {
 
         try {
             if (!dataFile.exists()) {
-                try {
-                    dataFile.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                dataFile.createNewFile();
             }
             Writer writer = new FileWriter(dataFile);
             writer.write(string);
@@ -51,7 +47,7 @@ public class DataUtil {
      * @param gson
      */
     public static List<ItemData> ReadrFuliDatas(File dataFile, Gson gson) {
-         Reader reader = null;
+         Reader reader ;
         try {
             reader = new FileReader(dataFile);
             return gson.fromJson(reader, new TypeToken<List<ItemData>>() {

@@ -57,8 +57,10 @@ public class DetailActivity extends BaseActivity {
         progrssBar.setVisibility(View.GONE);
         webView.setWebViewClient(new MyWebViewClient());
         ActionBar supportActionBar = getSupportActionBar();
-        supportActionBar.setDisplayHomeAsUpEnabled(true);
-        supportActionBar.setDisplayShowHomeEnabled(true);
+        if (supportActionBar != null) {
+            supportActionBar.setDisplayHomeAsUpEnabled(true);
+            supportActionBar.setDisplayShowHomeEnabled(true);
+        }
 
     }
 
@@ -138,7 +140,7 @@ public class DetailActivity extends BaseActivity {
 
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-           // super.onReceivedError(view, request, error);
+            // super.onReceivedError(view, request, error);
             Toast.makeText(DetailActivity.this, "kljkljljl", Toast.LENGTH_SHORT).show();
             stubErr.inflate();
         }

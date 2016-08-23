@@ -15,7 +15,7 @@
         android:layout_gravity="bottom|right"
         android:layout_margin="4dp"
         android:text="tttttt"
-        android:textSize="10dp" />
+        android:textSize="12sp" />
 </FrameLayout>
 
 

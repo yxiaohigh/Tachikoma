@@ -12,6 +12,7 @@ import com.squareup.leakcanary.LeakCanary;
  * application
  * Created by tony on 2016/4/26.
  */
+@SuppressWarnings("Convert2Diamond")
 public class App extends Application {
 
     private static App app;
@@ -26,7 +27,7 @@ public class App extends Application {
         app = this;
     }
 
-    public AppComponent getCommponent() {
+    public AppComponent getComponent() {
         return component;
     }
 
@@ -39,9 +40,11 @@ public class App extends Application {
      * @param k
      * @param v
      */
-    public void putAppArrayMap(String k,Object v) {
+    @SuppressWarnings("Convert2Diamond")
+    public void putAppArrayMap(String k, Object v) {
         if (arrayMap == null) {
-            arrayMap =  new ArrayMap<String, Object>();
+            //noinspection Convert2Diamond
+            arrayMap =  new ArrayMap<>();
         }
         arrayMap.put(k,v);
     }

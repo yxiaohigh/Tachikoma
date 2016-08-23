@@ -66,7 +66,7 @@ public class GalleryActivity extends AppCompatActivity {
         dataFile = new File(getApplication().getFilesDir(), DATA_FILE_NAME);
         initView();
         initPic();
-        getNetDate();
+        getNetData();
     }
 
     private void initView() {
@@ -74,7 +74,9 @@ public class GalleryActivity extends AppCompatActivity {
         rv = (RecyclerView) findViewById(R.id.rv);
         vp = (ViewPager) findViewById(R.id.vp);
 
-        toolbar.inflateMenu(R.menu.main_activity_actions);
+        if (toolbar != null) {
+            toolbar.inflateMenu(R.menu.main_activity_actions);
+        }
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         rv.setLayoutManager(linearLayoutManager);
@@ -163,7 +165,7 @@ public class GalleryActivity extends AppCompatActivity {
     /**
      * 请求网络数据
      */
-    private void getNetDate() {
+    private void getNetData() {
         NetApi netApi = NetClient.getNetApi();
         Observable<BasicData<ItemData>> fuliOb = netApi.getFuliOb(100, 1);
         fuliOb.subscribeOn(Schedulers.io())
@@ -202,11 +204,7 @@ public class GalleryActivity extends AppCompatActivity {
         if (itemDatasBak != null) {
             ItemData itemData = itemDatas.get(0);
             ItemData itemData1 = itemDatasBak.get(0);
-            if (itemData.get_id().equals(itemData1.get_id())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !itemData.get_id().equals(itemData1.get_id());
         }
         return true;
     }

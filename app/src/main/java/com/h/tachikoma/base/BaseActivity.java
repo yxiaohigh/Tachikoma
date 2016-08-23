@@ -12,12 +12,12 @@ import com.h.tachikoma.di.commponent.AppComponent;
  */
 public abstract class BaseActivity extends AppCompatActivity {
 
-    protected AppComponent commponent;
+    protected AppComponent component;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        commponent = App.getApplication().getCommponent();
+        component = App.getApplication().getComponent();
         setContent();
         initViews();
         initData();

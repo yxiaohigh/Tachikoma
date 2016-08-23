@@ -7,7 +7,7 @@
 
     <application
         android:name=".base.App"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -19,15 +19,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".act.GalleryActivity" />
         <activity android:name=".act.DetailActivity" />
         <activity android:name=".act.SwNightActivity" />
 
         <service
             android:name=".MyIntentService"
-            android:exported="false"/>
-    </application>
+            android:exported="false" />
+        <service
+            android:name=".service.RemoteWatchService"
+            android:exported="false"
+            android:process=":remote">
+        </service>
+        <service
+            android:name=".service.LocalWatchService"
+            android:exported="false">
 
+        </service>
+    </application>
 
 </manifest>

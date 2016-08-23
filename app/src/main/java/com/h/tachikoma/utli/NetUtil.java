@@ -5,6 +5,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 /**
+ *  网络状态检查工具
  * Created by tony on 2016/5/23.
  */
 public class NetUtil {
