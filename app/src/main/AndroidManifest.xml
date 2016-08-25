@@ -25,16 +25,26 @@
 
         <service
             android:name=".MyIntentService"
-            android:exported="false" />
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.h.tachikoma.service.MyIntentService" />
+            </intent-filter>
+        </service>
+
         <service
             android:name=".service.RemoteWatchService"
             android:exported="false"
             android:process=":remote">
+            <intent-filter >
+                <action android:name="com.h.tachikoma.service.RemoteWatchService" />
+            </intent-filter>
         </service>
         <service
             android:name=".service.LocalWatchService"
             android:exported="false">
-
+            <intent-filter >
+                <action android:name="com.h.tachikoma.service.LocalWatchService" />
+            </intent-filter>
         </service>
     </application>
 

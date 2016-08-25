@@ -12,7 +12,6 @@ import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
 import android.support.v7.graphics.Palette;
-import android.view.Display;
 import android.view.View;
 
 import java.io.File;
@@ -117,14 +116,13 @@ public class PicUtil {
         Rect rect = new Rect();
         decorView.getWindowVisibleDisplayFrame(rect);
         int statusBarHeights = rect.top;
-        Display display = activity.getWindowManager().getDefaultDisplay();
-        // 获取屏幕高
-        int height = display.getHeight();
-        int width = display.getWidth();
+
 
         decorView.buildDrawingCache();
         Bitmap drawingCache = decorView.getDrawingCache();
-        Bitmap bitmap = Bitmap.createBitmap(drawingCache, 0, statusBarHeights, width, height - statusBarHeights);
+        int height1 = drawingCache.getHeight();
+        int width1 = drawingCache.getWidth();
+        Bitmap bitmap = Bitmap.createBitmap(drawingCache, 0, statusBarHeights, width1, height1 - statusBarHeights);
         decorView.destroyDrawingCache();
 
         return bitmap;

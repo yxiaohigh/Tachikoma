@@ -1,16 +1,13 @@
 package com.h.tachikoma.service;
 
-import android.app.Notification;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
-
-import com.h.tachikoma.R;
+import android.util.Log;
 
 /**
  * 本地服务
@@ -18,58 +15,65 @@ import com.h.tachikoma.R;
  */
 public class LocalWatchService extends Service {
 
-    private ServiceConnection serviceConnection;
-    private Intent intent1;
+    private ServiceConnection myServiceConnection;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            Notification notification = new Notification.Builder(this)
-                    .setSmallIcon(R.drawable.ic_menu_camera)
-                    .setTicker("后台服务启用")
-                    .setContentTitle("后台")
-                    .setContentText("ssssssssssssssssssssssss")
-                    .setNumber(1)
-                    .getNotification();
-            startForeground(0x111, notification);
-        }
-
-        serviceConnection = new MyServiceConnection();
-        intent1 = new Intent(this, RemoteWatchService.class);
-        bindService(intent1, serviceConnection, Service.BIND_AUTO_CREATE);
-
+        Log.i("LocalWatchService", "本地服务启动成功");
+        startRemote();
         return START_STICKY;
+    }
+
+    /**
+     * 启动LocalRemote
+     */
+    private void startRemote() {
+        Intent intent1 = new Intent();
+        intent1.setAction("com.h.tachikoma.service.RemoteWatchService");
+        intent1.setPackage(getPackageName());
+        startService(intent1);
+        Log.i("LocalWatchService", " 启动远程");
+        if (myServiceConnection == null) {
+             myServiceConnection = new MyServiceConnection();
+        }
+        bindService(intent1, myServiceConnection, Service.BIND_IMPORTANT);
+        Log.i("LocalWatchService", " 绑定远程");
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        IWatchAidl.Stub stub = new IWatchAidl.Stub() {
+        return new IWatchAidl.Stub() {
             @Override
             public void onServiceStart() throws RemoteException {
-
+                Log.i("LocalWatchService", "onServiceStart");
             }
 
             @Override
             public void onServiceDath() throws RemoteException {
-
+                Log.i("LocalWatchService", "onServiceDath");
             }
         };
-        return stub;
     }
 
     private class MyServiceConnection implements ServiceConnection {
 
 
+
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-
+            Log.i("LocalWatchService", "本地绑定远程服务成功");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            startService(intent1);
-            bindService(intent1, serviceConnection, Service.BIND_AUTO_CREATE);
+            Log.i("LocalWatchService", "监视到远程服务被杀");
+            startRemote();
         }
 
     }

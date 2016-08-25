@@ -15,6 +15,7 @@ import com.h.tachikoma.R;
 import com.h.tachikoma.base.App;
 import com.h.tachikoma.base.BaseActivity;
 import com.h.tachikoma.dummy.DummyContent;
+import com.h.tachikoma.service.LocalWatchService;
 import com.h.tachikoma.utli.PicUtil;
 
 import java.util.ArrayList;
@@ -34,8 +35,6 @@ public class MainActivity extends BaseActivity implements ItemFragment.OnListFra
     @Override
     protected void setContent() {
         setContentView(R.layout.activity_main);
-
-
     }
 
 
@@ -62,6 +61,7 @@ public class MainActivity extends BaseActivity implements ItemFragment.OnListFra
         vp.setAdapter(mainFragmentPagerAdapter);
         tab.setupWithViewPager(vp);
         tab.setTabMode(TabLayout.MODE_FIXED);
+
     }
 
     /**
@@ -74,6 +74,8 @@ public class MainActivity extends BaseActivity implements ItemFragment.OnListFra
         Snackbar.make(vp, id, Snackbar.LENGTH_SHORT).show();
         //白天黑夜模式转换
         SwNighAndDay(this);
+        Intent intent = new Intent(this, LocalWatchService.class);
+        startService(intent);
     }
 
 
